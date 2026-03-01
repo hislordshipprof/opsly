@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────
+
+enum Role {
+  TENANT
+  TECHNICIAN
+  MANAGER
+  ADMIN
+}
+
+enum IssueCategory {
+  PLUMBING
+  ELECTRICAL
+  HVAC
+  STRUCTURAL
+  APPLIANCE
+  PEST
+  LOCKSMITH
+  OTHER
+}
+
+enum WorkOrderStatus {
+  REPORTED
+  TRIAGED
+  ASSIGNED
+  EN_ROUTE
+  IN_PROGRESS
+  NEEDS_PARTS
+  COMPLETED
+  ESCALATED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum WorkOrderEventType {
+  CREATED
+  STATUS_CHANGED
+  TECHNICIAN_ASSIGNED
+  PHOTO_UPLOADED
+  ETA_UPDATED
+  NOTE_ADDED
+  ESCALATED
+  COMPLETED
+}
+
+// ─── Models ───────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  managedProperties Property[]    @relation("PropertyManager")
+  tenantUnit        Unit?         @relation("UnitTenant")
+  reportedOrders    WorkOrder[]   @relation("ReportedBy")
+  assignedOrders    WorkOrder[]   @relation("AssignedTo")
+  workOrderEvents   WorkOrderEvent[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Property {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  city      String
+  managerId String
+  createdAt DateTime @default(now())
+
+  // Relations
+  manager    User       @relation("PropertyManager", fields: [managerId], references: [id])
+  units      Unit[]
+  workOrders WorkOrder[]
+
+  @@index([managerId])
+}
+
+model Unit {
+  id         String  @id @default(uuid())
+  propertyId String
+  unitNumber String
+  floor      Int?
+  tenantId   String? @unique
+  isOccupied Boolean @default(false)
+
+  // Relations
+  property   Property    @relation(fields: [propertyId], references: [id])
+  tenant     User?       @relation("UnitTenant", fields: [tenantId], references: [id])
+  workOrders WorkOrder[]
+
+  @@unique([propertyId, unitNumber])
+  @@index([propertyId])
+}
+
+model WorkOrder {
+  id               String          @id @default(uuid())
+  orderNumber      String          @unique
+  unitId           String
+  propertyId       String
+  reportedById     String
+  assignedToId     String?
+  issueCategory    IssueCategory
+  issueDescription String
+  status           WorkOrderStatus @default(REPORTED)
+  priority         Priority        @default(MEDIUM)
+  aiSeverityScore  Float?
+  slaDeadline      DateTime?
+  slaBreached      Boolean         @default(false)
+  photoUrls        String[]
+  visionAssessment Json?
+  resolutionNotes  String?
+  completedAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  // Relations
+  unit         Unit               @relation(fields: [unitId], references: [id])
+  property     Property           @relation(fields: [propertyId], references: [id])
+  reportedBy   User               @relation("ReportedBy", fields: [reportedById], references: [id])
+  assignedTo   User?              @relation("AssignedTo", fields: [assignedToId], references: [id])
+  events       WorkOrderEvent[]
+
+  @@index([orderNumber])
+  @@index([propertyId])
+  @@index([reportedById])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+model WorkOrderEvent {
+  id          String             @id @default(uuid())
+  workOrderId String
+  eventType   WorkOrderEventType
+  actorId     String?
+  fromStatus  WorkOrderStatus?
+  toStatus    WorkOrderStatus?
+  notes       String?
+  metadata    Json?
+  createdAt   DateTime           @default(now())
+
+  // Relations
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id])
+  actor     User?     @relation(fields: [actorId], references: [id])
+
+  @@index([workOrderId])
+  @@index([createdAt])
+}
