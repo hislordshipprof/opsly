@@ -13,12 +13,16 @@ import { AssignTechnicianDto } from './dto/assign-technician.dto.js';
 import { QueryWorkOrdersDto } from './dto/query-work-orders.dto.js';
 import { sanitizeText } from '../common/utils/sanitize.js';
 import { computeSlaDeadline } from '../common/utils/sla.js';
+import { OpslyGateway } from '../websocket/opsly.gateway.js';
 
 @Injectable()
 export class WorkOrdersService {
   private readonly logger = new Logger(WorkOrdersService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gateway: OpslyGateway,
+  ) {}
 
   async create(dto: CreateWorkOrderDto, userId: string) {
     const unit = await this.prisma.unit.findUnique({
@@ -66,6 +70,7 @@ export class WorkOrdersService {
     });
 
     this.logger.log(`Work order ${orderNumber} created by user ${userId}`);
+    this.gateway.emitWorkOrderCreated(workOrder as unknown as Record<string, unknown>);
     return workOrder;
   }
 
@@ -171,6 +176,19 @@ export class WorkOrdersService {
     this.logger.log(
       `Work order ${workOrder.orderNumber} status: ${workOrder.status} → ${dto.status}`,
     );
+
+    if (isCompleting) {
+      this.gateway.emitWorkOrderCompleted(
+        updated as unknown as Record<string, unknown>,
+        workOrder.reportedById,
+      );
+    } else {
+      this.gateway.emitWorkOrderStatusChanged(
+        updated as unknown as Record<string, unknown>,
+        workOrder.reportedById,
+      );
+    }
+
     return updated;
   }
 
@@ -223,6 +241,11 @@ export class WorkOrdersService {
 
     this.logger.log(
       `Work order ${workOrder.orderNumber} assigned to ${technician.name}`,
+    );
+    this.gateway.emitTechnicianAssigned(
+      updated as unknown as Record<string, unknown>,
+      workOrder.reportedById,
+      technician.id,
     );
     return updated;
   }
