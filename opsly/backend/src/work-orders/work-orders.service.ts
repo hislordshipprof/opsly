@@ -14,6 +14,8 @@ import { QueryWorkOrdersDto } from './dto/query-work-orders.dto.js';
 import { sanitizeText } from '../common/utils/sanitize.js';
 import { computeSlaDeadline } from '../common/utils/sla.js';
 import { OpslyGateway } from '../websocket/opsly.gateway.js';
+import { VisionService } from '../ai/vision.service.js';
+import { mapAssessmentToPriority, computeAiSeverityScore } from '../ai/utils/priority-mapper.js';
 
 @Injectable()
 export class WorkOrdersService {
@@ -22,6 +24,7 @@ export class WorkOrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gateway: OpslyGateway,
+    private readonly visionService: VisionService,
   ) {}
 
   async create(dto: CreateWorkOrderDto, userId: string) {
@@ -261,6 +264,67 @@ export class WorkOrdersService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async uploadPhoto(
+    id: string,
+    imageBase64: string,
+    mimeType: string,
+    userId: string,
+    userRole: Role,
+  ) {
+    const workOrder = await this.findOne(id, userId, userRole);
+
+    // Assess photo with Gemini Vision
+    const assessment = await this.visionService.assessPhoto(imageBase64, mimeType);
+    const priority = mapAssessmentToPriority(assessment);
+    const aiSeverityScore = computeAiSeverityScore(assessment);
+    const slaDeadline = computeSlaDeadline(priority);
+
+    // Store base64 as data URI for demo (production would use Cloud Storage)
+    const photoUrl = `data:${mimeType};base64,${imageBase64.substring(0, 50)}...`;
+
+    const updated = await this.prisma.workOrder.update({
+      where: { id },
+      data: {
+        photoUrls: { push: photoUrl },
+        visionAssessment: JSON.parse(JSON.stringify(assessment)),
+        aiSeverityScore,
+        priority,
+        slaDeadline,
+        events: {
+          create: {
+            eventType: WorkOrderEventType.PHOTO_UPLOADED,
+            actorId: userId,
+            notes: `Photo assessed: ${assessment.damageType} (${assessment.severity}, confidence: ${assessment.confidence})`,
+            metadata: {
+              mimeType,
+              aiSeverityScore,
+              recommendedPriority: assessment.recommendedPriority,
+            },
+          },
+        },
+      },
+      include: {
+        unit: { select: { unitNumber: true } },
+        property: { select: { name: true } },
+        reportedBy: { select: { id: true, name: true } },
+      },
+    });
+
+    this.logger.log(
+      `Photo assessed for ${workOrder.orderNumber}: severity=${assessment.severity}, priority=${priority}, score=${aiSeverityScore}`,
+    );
+
+    this.gateway.emitPhotoAssessed({
+      ...updated,
+      visionAssessment: assessment,
+    } as unknown as Record<string, unknown>);
+
+    return {
+      workOrder: updated,
+      assessment,
+    };
   }
 
   /** Generates a unique order number in format WO-XXXX */

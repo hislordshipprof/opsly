@@ -162,6 +162,11 @@ export class OpslyGateway
     );
   }
 
+  /** Photo assessed by Gemini Vision → managers + admins */
+  emitPhotoAssessed(workOrder: Record<string, unknown>) {
+    this.emitToRoom('ops:all', 'workorder.photo_assessed', workOrder);
+  }
+
   /** Escalation triggered → managers + admins */
   emitEscalationTriggered(escalation: Record<string, unknown>) {
     this.emitToRoom('escalations', 'escalation.triggered', escalation);
