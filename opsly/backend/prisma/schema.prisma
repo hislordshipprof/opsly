@@ -57,6 +57,17 @@ enum WorkOrderEventType {
   COMPLETED
 }
 
+enum AgentChannel {
+  CHAT
+  VOICE
+}
+
+enum AgentSessionStatus {
+  ACTIVE
+  COMPLETED
+  ERROR
+}
+
 // ─── Models ───────────────────────────────────────────
 
 model User {
@@ -75,6 +86,7 @@ model User {
   reportedOrders    WorkOrder[]   @relation("ReportedBy")
   assignedOrders    WorkOrder[]   @relation("AssignedTo")
   workOrderEvents   WorkOrderEvent[]
+  agentSessions     AgentSession[]
 
   @@index([email])
   @@index([role])
@@ -135,11 +147,12 @@ model WorkOrder {
   updatedAt        DateTime        @updatedAt
 
   // Relations
-  unit         Unit               @relation(fields: [unitId], references: [id])
-  property     Property           @relation(fields: [propertyId], references: [id])
-  reportedBy   User               @relation("ReportedBy", fields: [reportedById], references: [id])
-  assignedTo   User?              @relation("AssignedTo", fields: [assignedToId], references: [id])
-  events       WorkOrderEvent[]
+  unit           Unit               @relation(fields: [unitId], references: [id])
+  property       Property           @relation(fields: [propertyId], references: [id])
+  reportedBy     User               @relation("ReportedBy", fields: [reportedById], references: [id])
+  assignedTo     User?              @relation("AssignedTo", fields: [assignedToId], references: [id])
+  events         WorkOrderEvent[]
+  agentSessions  AgentSession[]
 
   @@index([orderNumber])
   @@index([propertyId])
@@ -167,4 +180,27 @@ model WorkOrderEvent {
 
   @@index([workOrderId])
   @@index([createdAt])
+}
+
+model AgentSession {
+  id                String             @id @default(uuid())
+  userId            String?
+  role              String
+  channel           AgentChannel
+  linkedWorkOrderId String?
+  geminiSessionId   String?
+  startedAt         DateTime           @default(now())
+  endedAt           DateTime?
+  status            AgentSessionStatus @default(ACTIVE)
+  lastAgentName     String?
+  transcript        Json?
+  outcome           Json?
+
+  // Relations
+  user              User?      @relation(fields: [userId], references: [id])
+  linkedWorkOrder   WorkOrder? @relation(fields: [linkedWorkOrderId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([startedAt])
 }
