@@ -38,6 +38,18 @@ export class WorkOrdersController {
     return this.workOrdersService.findAll(query, req.user.userId, req.user.role);
   }
 
+  @Get('metrics')
+  @Roles(Role.MANAGER, Role.ADMIN)
+  getMetrics() {
+    return this.workOrdersService.getMetrics();
+  }
+
+  @Get('technicians')
+  @Roles(Role.MANAGER, Role.ADMIN)
+  getTechnicianSummaries() {
+    return this.workOrdersService.getTechnicianSummaries();
+  }
+
   @Get(':id')
   @Roles(Role.TENANT, Role.TECHNICIAN, Role.MANAGER, Role.ADMIN)
   findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req: any) {

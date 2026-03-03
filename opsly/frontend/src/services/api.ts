@@ -79,7 +79,52 @@ export async function updateWorkOrderStatus(
   status: string,
   notes?: string,
 ) {
-  const { data } = await api.patch(`/work-orders/${id}`, { status, ...(notes && { resolutionNotes: notes }) });
+  const { data } = await api.patch(`/work-orders/${id}/status`, { status, ...(notes && { notes }) });
+  return data;
+}
+
+// ─── Dashboard APIs ────────────────────────────────────
+
+export async function getWorkOrders(params?: Record<string, string | number | undefined>) {
+  const filtered = Object.fromEntries(
+    Object.entries(params ?? {}).filter(([, v]) => v != null),
+  );
+  const { data } = await api.get('/work-orders', { params: filtered });
+  return data;
+}
+
+export async function getWorkOrder(id: string) {
+  const { data } = await api.get(`/work-orders/${id}`);
+  return data;
+}
+
+export async function getWorkOrderEvents(id: string) {
+  const { data } = await api.get(`/work-orders/${id}/events`);
+  return data;
+}
+
+export async function getDashboardMetrics() {
+  const { data } = await api.get('/work-orders/metrics');
+  return data;
+}
+
+export async function getTechnicianSummaries() {
+  const { data } = await api.get('/work-orders/technicians');
+  return data;
+}
+
+export async function assignTechnician(workOrderId: string, technicianId: string) {
+  const { data } = await api.patch(`/work-orders/${workOrderId}/assign`, { technicianId });
+  return data;
+}
+
+export async function getUsers(role?: string) {
+  const { data } = await api.get('/users', { params: role ? { role } : {} });
+  return data;
+}
+
+export async function getProperties() {
+  const { data } = await api.get('/properties');
   return data;
 }
 
