@@ -5,6 +5,8 @@ import {
   WorkOrderStatus,
   Priority,
   WorkOrderEventType,
+  ScheduleStatus,
+  StopStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -206,6 +208,38 @@ async function main() {
         },
       },
     });
+  }
+
+  // ─── Technician Schedule (4 stops for Mike) ────────
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+
+  // Fetch the work orders Mike is assigned to (ASSIGNED or IN_PROGRESS)
+  const mikeOrders = await prisma.workOrder.findMany({
+    where: { assignedToId: tech.id, status: { in: [WorkOrderStatus.ASSIGNED, WorkOrderStatus.IN_PROGRESS] } },
+    orderBy: { priority: 'desc' },
+  });
+
+  if (mikeOrders.length > 0) {
+    const schedule = await prisma.technicianSchedule.create({
+      data: {
+        scheduleCode: `SCH-${dateStr}-MIKE`,
+        date: today,
+        technicianId: tech.id,
+        region: 'London Central',
+        status: ScheduleStatus.ACTIVE,
+        stops: {
+          create: mikeOrders.map((wo, i) => ({
+            workOrderId: wo.id,
+            sequenceNumber: i + 1,
+            plannedEta: new Date(today.getTime() + (i + 1) * 60 * 60 * 1000),
+            status: wo.status === WorkOrderStatus.IN_PROGRESS ? StopStatus.ARRIVED : StopStatus.PENDING,
+            ...(wo.status === WorkOrderStatus.IN_PROGRESS && { actualArrival: new Date() }),
+          })),
+        },
+      },
+    });
+    console.log(`  Schedule: ${schedule.scheduleCode} — ${mikeOrders.length} stops`);
   }
 
   console.log('Seed complete.');

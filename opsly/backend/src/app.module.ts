@@ -9,6 +9,7 @@ import { UnitsModule } from './units/units.module.js';
 import { WebSocketModule } from './websocket/websocket.module.js';
 import { AgentSessionsModule } from './agent-sessions/agent-sessions.module.js';
 import { AiModule } from './ai/ai.module.js';
+import { SchedulesModule } from './schedules/schedules.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AiModule } from './ai/ai.module.js';
     WebSocketModule,
     AgentSessionsModule,
     AiModule,
+    SchedulesModule,
   ],
 })
 export class AppModule {}

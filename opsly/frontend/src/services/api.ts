@@ -128,4 +128,19 @@ export async function getProperties() {
   return data;
 }
 
+// ─── Technician Schedule APIs ─────────────────────────
+
+export async function getTechnicianSchedule(date?: string) {
+  const { data } = await api.get('/schedules', { params: date ? { date } : {} });
+  return data;
+}
+
+export async function updateStopStatus(stopId: string, status: string, notes?: string) {
+  const { data } = await api.patch(`/schedules/stops/${stopId}/status`, {
+    status,
+    ...(notes && { notes }),
+  });
+  return data;
+}
+
 export default api;

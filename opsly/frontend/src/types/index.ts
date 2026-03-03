@@ -147,6 +147,54 @@ export interface TechnicianSummary {
   currentOrderNumber: string | null;
 }
 
+// ─── Technician Schedule Types ─────────────────────────
+
+export enum StopStatus {
+  PENDING = 'PENDING',
+  EN_ROUTE = 'EN_ROUTE',
+  ARRIVED = 'ARRIVED',
+  COMPLETED = 'COMPLETED',
+  SKIPPED = 'SKIPPED',
+}
+
+export interface ScheduleStop {
+  id: string;
+  sequenceNumber: number;
+  plannedEta: string | null;
+  actualArrival: string | null;
+  status: StopStatus;
+  notes: string | null;
+  workOrder: {
+    id: string;
+    orderNumber: string;
+    issueCategory: IssueCategory;
+    issueDescription: string;
+    priority: Priority;
+    status: WorkOrderStatus;
+    aiSeverityScore: number | null;
+    visionAssessment: VisionAssessment | null;
+    photoUrls: string[];
+    slaDeadline: string | null;
+    slaBreached: boolean;
+    resolutionNotes: string | null;
+    unit: {
+      unitNumber: string;
+      floor: number | null;
+      property: { name: string; address: string };
+    };
+    reportedBy: { name: string };
+  };
+}
+
+export interface TechnicianSchedule {
+  id: string;
+  scheduleCode: string;
+  date: string;
+  region: string | null;
+  status: string;
+  stops: ScheduleStop[];
+}
+
 // ─── WebSocket Event Types ─────────────────────────────
 
 export type WsEventName =
