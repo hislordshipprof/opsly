@@ -33,6 +33,21 @@ export class UnitsService {
     return unit;
   }
 
+  async findByTenant(tenantId: string) {
+    const unit = await this.prisma.unit.findFirst({
+      where: { tenantId },
+      include: {
+        property: { select: { id: true, name: true, address: true } },
+      },
+    });
+
+    if (!unit) {
+      throw new NotFoundException(`No unit found for tenant ${tenantId}`);
+    }
+
+    return unit;
+  }
+
   async assignTenant(id: string, dto: AssignTenantDto) {
     const unit = await this.prisma.unit.findUnique({
       where: { id },
