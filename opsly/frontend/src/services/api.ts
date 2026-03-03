@@ -69,11 +69,6 @@ export async function getOpenWorkOrders() {
   return data;
 }
 
-export async function getTechnicianSchedule() {
-  const { data } = await api.get('/work-orders?status=ASSIGNED');
-  return data;
-}
-
 export async function updateWorkOrderStatus(
   id: string,
   status: string,

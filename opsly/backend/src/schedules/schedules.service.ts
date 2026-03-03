@@ -9,10 +9,9 @@ export class SchedulesService {
   /** Get today's schedule for a technician (with stops + work order details) */
   async getTechnicianSchedule(technicianId: string, date?: string) {
     const targetDate = date ? new Date(date) : new Date();
-    const dayStart = new Date(targetDate);
-    dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = new Date(targetDate);
-    dayEnd.setHours(23, 59, 59, 999);
+    // Use UTC boundaries to avoid timezone mismatch with stored dates
+    const dayStart = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0, 0));
+    const dayEnd = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999));
 
     return this.prisma.technicianSchedule.findFirst({
       where: {
@@ -44,7 +43,7 @@ export class SchedulesService {
                     property: { select: { name: true, address: true } },
                   },
                 },
-                reportedBy: { select: { name: true } },
+                reportedBy: { select: { name: true, email: true } },
               },
             },
           },
