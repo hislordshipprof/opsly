@@ -10,29 +10,41 @@ interface KpiCardProps {
   variant?: 'default' | 'urgent' | 'active' | 'success';
 }
 
-const VARIANT_STYLES: Record<string, string> = {
-  default: 'glass-card',
-  urgent: 'glass-card border-opsly-urgent/20',
-  active: 'glass-card border-primary/20',
-  success: 'glass-card border-opsly-low/20',
-};
-
-const VARIANT_VALUE_COLORS: Record<string, string> = {
-  default: 'text-foreground',
-  urgent: 'text-opsly-urgent',
-  active: 'text-primary',
-  success: 'text-opsly-low',
+const VARIANT_CONFIG: Record<string, { card: string; value: string; accent: string }> = {
+  default: {
+    card: 'glass-card',
+    value: 'text-foreground',
+    accent: 'bg-primary',
+  },
+  urgent: {
+    card: 'glass-card',
+    value: 'text-opsly-urgent',
+    accent: 'bg-opsly-urgent',
+  },
+  active: {
+    card: 'glass-card',
+    value: 'text-primary',
+    accent: 'bg-primary',
+  },
+  success: {
+    card: 'glass-card',
+    value: 'text-opsly-low',
+    accent: 'bg-opsly-low',
+  },
 };
 
 function KpiCard({ label, value, subtitle, variant = 'default' }: KpiCardProps) {
+  const config = VARIANT_CONFIG[variant];
   return (
-    <div className={`${VARIANT_STYLES[variant]} p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <p className={`font-mono text-3xl font-bold mt-2 ${VARIANT_VALUE_COLORS[variant]}`}>
+    <div className={`${config.card} relative overflow-hidden p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg group`}>
+      {/* Accent strip at top */}
+      <div className={`absolute top-0 left-6 right-6 h-[2px] ${config.accent} rounded-full opacity-60 group-hover:opacity-100 transition-opacity`} />
+      <p className="text-[13px] font-medium text-muted-foreground tracking-wide">{label}</p>
+      <p className={`font-mono text-4xl font-extrabold mt-1.5 tracking-tight ${config.value}`}>
         {value}
       </p>
       {subtitle && (
-        <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+        <p className="text-xs text-muted-foreground mt-2">{subtitle}</p>
       )}
     </div>
   );

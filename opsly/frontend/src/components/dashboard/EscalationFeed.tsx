@@ -75,7 +75,7 @@ export function EscalationFeed() {
                 <SlaCountdown slaDeadline={wo.slaDeadline} slaBreached={wo.slaBreached} />
               </div>
 
-              <p className="text-xs text-muted-foreground mt-1 truncate">
+              <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
                 {wo.property.name} / {wo.unit.unitNumber} — {wo.issueDescription}
               </p>
 

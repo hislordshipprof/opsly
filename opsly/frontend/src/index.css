@@ -119,14 +119,16 @@ body {
   --sidebar-ring: #2563EB;
 
   /* Glass tokens */
-  --glass-bg: rgba(255, 255, 255, 0.80);
-  --glass-bg-heavy: rgba(255, 255, 255, 0.92);
-  --glass-border: rgba(255, 255, 255, 0.50);
-  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-heavy: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.60);
+  --glass-border-subtle: rgba(0, 0, 0, 0.04);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --glass-shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.60);
 
-  /* Page gradient */
-  --page-gradient: linear-gradient(135deg, #D6E4F0 0%, #DDE3EC 40%, #E8EFF7 100%);
+  /* Page gradient — more visible warm blue-lavender */
+  --page-gradient: linear-gradient(145deg, #C7D9EE 0%, #D4DCEF 30%, #E2D9F0 60%, #E8E4F3 100%);
 
   /* Featured card gradients */
   --gradient-featured: linear-gradient(135deg, #dbeafe 0%, #ede9fe 50%, #fce7f3 100%);
@@ -168,11 +170,13 @@ body {
   --sidebar-ring: #3B82F6;
 
   /* Glass tokens — dark */
-  --glass-bg: rgba(17, 24, 39, 0.80);
-  --glass-bg-heavy: rgba(17, 24, 39, 0.92);
+  --glass-bg: rgba(17, 24, 39, 0.60);
+  --glass-bg-heavy: rgba(17, 24, 39, 0.85);
   --glass-border: rgba(255, 255, 255, 0.10);
-  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.20);
-  --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.30);
+  --glass-border-subtle: rgba(255, 255, 255, 0.04);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+  --glass-shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.30), 0 4px 16px rgba(0, 0, 0, 0.20);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
   /* Page gradient — dark */
   --page-gradient: linear-gradient(135deg, #0A0F1E 0%, #111827 40%, #0F172A 100%);
@@ -197,37 +201,46 @@ body {
 @layer components {
   .glass-card {
     background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
     border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
+    box-shadow: var(--glass-shadow), var(--glass-inset);
     border-radius: 20px;
   }
 
   .glass-card-heavy {
     background: var(--glass-bg-heavy);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(32px) saturate(1.3);
+    -webkit-backdrop-filter: blur(32px) saturate(1.3);
     border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
+    box-shadow: var(--glass-shadow), var(--glass-inset);
     border-radius: 20px;
   }
 
   .glass-card-featured {
     background: var(--gradient-featured);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
     border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow-lg);
+    box-shadow: var(--glass-shadow-lg), var(--glass-inset);
     border-radius: 24px;
   }
 
   .glass-nav {
     background: var(--glass-bg-heavy);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(24px) saturate(1.3);
+    -webkit-backdrop-filter: blur(24px) saturate(1.3);
     border-bottom: 1px solid var(--glass-border);
-    box-shadow: 0 1px 12px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05), var(--glass-inset);
+  }
+
+  .glass-strip {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 16px;
   }
 
   .pill-active {

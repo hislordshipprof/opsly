@@ -17,29 +17,32 @@ export default function ManagerDashboardPage() {
   return (
     <div className="min-h-screen">
       {/* Top Navigation */}
-      <header className="glass-nav sticky top-0 z-30 px-6 py-3">
+      <header className="glass-nav sticky top-0 z-30 px-6 py-3.5">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <h1 className="text-lg font-bold tracking-tight">OPSLY</h1>
+          <div className="flex items-center gap-8">
+            <h1 className="text-lg font-bold tracking-tight select-none">OPSLY</h1>
             <nav className="hidden md:flex items-center gap-1">
               <span className="pill-active">Dashboard</span>
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             {/* Connection indicator */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/40">
               <span className={`size-2 rounded-full ${
                 isConnected ? 'bg-opsly-low' : 'bg-opsly-urgent animate-pulse'
               }`} />
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs font-medium text-muted-foreground">
                 {isConnected ? 'Live' : 'Connecting...'}
               </span>
             </div>
 
+            {/* Separator */}
+            <div className="h-5 w-px bg-border" />
+
             {/* User info */}
-            <div className="flex items-center gap-2">
-              <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="flex items-center gap-2.5">
+              <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/5">
                 <span className="text-xs font-semibold text-primary">
                   {user?.email?.charAt(0).toUpperCase() ?? 'M'}
                 </span>

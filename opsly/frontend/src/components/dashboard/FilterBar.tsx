@@ -46,7 +46,7 @@ export function FilterBar() {
   const hasActiveFilters = Object.values(filters).some((v) => v != null);
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="glass-strip px-4 py-3 flex flex-wrap items-center gap-3">
       {/* Property filter */}
       <Select
         value={filters.propertyId ?? ''}
@@ -55,7 +55,7 @@ export function FilterBar() {
         <SelectTrigger className="w-[180px] h-9 rounded-xl bg-card/60 backdrop-blur-sm border-border text-sm">
           <SelectValue placeholder="All Properties" />
         </SelectTrigger>
-        <SelectContent className="glass-card-heavy">
+        <SelectContent position="popper" className="rounded-xl border border-border bg-popover shadow-lg backdrop-blur-xl">
           {properties?.map((p) => (
             <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
           ))}
@@ -70,7 +70,7 @@ export function FilterBar() {
         <SelectTrigger className="w-[160px] h-9 rounded-xl bg-card/60 backdrop-blur-sm border-border text-sm">
           <SelectValue placeholder="All Statuses" />
         </SelectTrigger>
-        <SelectContent className="glass-card-heavy">
+        <SelectContent position="popper" className="rounded-xl border border-border bg-popover shadow-lg backdrop-blur-xl">
           {STATUS_OPTIONS.map((s) => (
             <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
           ))}
@@ -85,7 +85,7 @@ export function FilterBar() {
         <SelectTrigger className="w-[150px] h-9 rounded-xl bg-card/60 backdrop-blur-sm border-border text-sm">
           <SelectValue placeholder="All Priorities" />
         </SelectTrigger>
-        <SelectContent className="glass-card-heavy">
+        <SelectContent position="popper" className="rounded-xl border border-border bg-popover shadow-lg backdrop-blur-xl">
           {PRIORITY_OPTIONS.map((p) => (
             <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
           ))}
@@ -100,7 +100,7 @@ export function FilterBar() {
         <SelectTrigger className="w-[180px] h-9 rounded-xl bg-card/60 backdrop-blur-sm border-border text-sm">
           <SelectValue placeholder="All Technicians" />
         </SelectTrigger>
-        <SelectContent className="glass-card-heavy">
+        <SelectContent position="popper" className="rounded-xl border border-border bg-popover shadow-lg backdrop-blur-xl">
           {technicians?.map((t) => (
             <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
           ))}

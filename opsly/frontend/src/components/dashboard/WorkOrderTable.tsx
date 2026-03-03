@@ -72,26 +72,35 @@ export function WorkOrderTable() {
   if (isLoading) return <TableSkeleton />;
   if (!workOrders?.length) return <EmptyState />;
 
+  const headerCls = "text-[11px] uppercase tracking-widest text-muted-foreground/80 font-semibold py-3";
+
   return (
     <div className="glass-card overflow-hidden">
+      {/* Section header */}
+      <div className="px-5 py-4 border-b border-border/50">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold">Work Orders</h3>
+          <span className="text-xs text-muted-foreground font-mono">{workOrders.length} results</span>
+        </div>
+      </div>
       <Table>
         <TableHeader>
-          <TableRow className="border-border hover:bg-transparent">
-            <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Order</TableHead>
-            <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Unit</TableHead>
-            <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Issue</TableHead>
-            <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Priority</TableHead>
-            <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Status</TableHead>
-            <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Assigned To</TableHead>
-            <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">SLA</TableHead>
-            <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Reported</TableHead>
+          <TableRow className="border-border/50 hover:bg-transparent">
+            <TableHead className={headerCls}>Order</TableHead>
+            <TableHead className={headerCls}>Unit</TableHead>
+            <TableHead className={headerCls}>Issue</TableHead>
+            <TableHead className={headerCls}>Priority</TableHead>
+            <TableHead className={headerCls}>Status</TableHead>
+            <TableHead className={headerCls}>Assigned To</TableHead>
+            <TableHead className={headerCls}>SLA</TableHead>
+            <TableHead className={headerCls}>Reported</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {workOrders.map((wo) => (
             <TableRow
               key={wo.id}
-              className="cursor-pointer border-border transition-colors hover:bg-accent/50"
+              className="cursor-pointer border-border/30 transition-colors hover:bg-primary/[0.03]"
               onClick={() => selectWorkOrder(wo.id)}
             >
               <TableCell className="font-mono text-sm font-semibold text-primary">
