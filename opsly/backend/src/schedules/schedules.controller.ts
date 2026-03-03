@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { SchedulesService } from './schedules.service.js';
 import { UpdateStopStatusDto } from './dto/update-stop-status.dto.js';
+import { UpdateStopEtaDto } from './dto/update-stop-eta.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
@@ -41,5 +42,16 @@ export class SchedulesController {
       dto.status as any,
       dto.notes,
     );
+  }
+
+  /** PATCH /schedules/stops/:id/eta — update a stop's ETA */
+  @Patch('stops/:id/eta')
+  @Roles(Role.TECHNICIAN)
+  updateStopEta(
+    @Param('id') id: string,
+    @Body() dto: UpdateStopEtaDto,
+    @Request() req: any,
+  ) {
+    return this.schedulesService.updateStopEta(id, req.user.sub, dto.eta);
   }
 }

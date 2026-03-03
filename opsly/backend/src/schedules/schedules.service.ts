@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { OpslyGateway } from '../websocket/opsly.gateway.js';
 import { StopStatus, WorkOrderStatus } from '@prisma/client';
 
 @Injectable()
 export class SchedulesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private gateway: OpslyGateway,
+  ) {}
 
   /** Get today's schedule for a technician (with stops + work order details) */
   async getTechnicianSchedule(technicianId: string, date?: string) {
@@ -61,7 +65,7 @@ export class SchedulesService {
   ) {
     const stop = await this.prisma.scheduleStop.findUnique({
       where: { id: stopId },
-      include: { schedule: true },
+      include: { schedule: true, workOrder: { select: { reportedById: true } } },
     });
 
     if (!stop) throw new NotFoundException(`Schedule stop ${stopId} not found`);
@@ -114,6 +118,61 @@ export class SchedulesService {
       return updated;
     });
 
+    // Emit WebSocket events so dashboard + tenant update in real-time
+    const woStatus = woStatusMap[status];
+    if (woStatus) {
+      const updatedWo = await this.prisma.workOrder.findUnique({
+        where: { id: stop.workOrderId },
+      });
+      if (updatedWo) {
+        const payload = updatedWo as unknown as Record<string, unknown>;
+        if (woStatus === WorkOrderStatus.COMPLETED) {
+          this.gateway.emitWorkOrderCompleted(payload, stop.workOrder.reportedById);
+        } else {
+          this.gateway.emitWorkOrderStatusChanged(payload, stop.workOrder.reportedById);
+        }
+      }
+    }
+
     return updatedStop;
+  }
+
+  /** Update a schedule stop's ETA + notify tenant via WebSocket */
+  async updateStopEta(
+    stopId: string,
+    technicianId: string,
+    eta: string,
+  ) {
+    const stop = await this.prisma.scheduleStop.findUnique({
+      where: { id: stopId },
+      include: { schedule: true, workOrder: { select: { id: true, reportedById: true } } },
+    });
+
+    if (!stop) throw new NotFoundException(`Schedule stop ${stopId} not found`);
+    if (stop.schedule.technicianId !== technicianId) {
+      throw new ForbiddenException('You can only update your own schedule stops');
+    }
+
+    const updated = await this.prisma.scheduleStop.update({
+      where: { id: stopId },
+      data: { plannedEta: new Date(eta) },
+    });
+
+    // Log event + emit WebSocket
+    await this.prisma.workOrderEvent.create({
+      data: {
+        workOrderId: stop.workOrder.id,
+        eventType: 'ETA_UPDATED',
+        actorId: technicianId,
+        notes: `ETA updated to ${eta}`,
+      },
+    });
+
+    this.gateway.emitEtaUpdated(
+      { workOrderId: stop.workOrder.id, stopId, eta } as unknown as Record<string, unknown>,
+      stop.workOrder.reportedById,
+    );
+
+    return updated;
   }
 }
