@@ -16,7 +16,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/tenant/report');
+      navigate('/');
     } catch {
       setError('Invalid credentials');
     } finally {

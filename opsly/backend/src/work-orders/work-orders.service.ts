@@ -327,6 +327,117 @@ export class WorkOrdersService {
     };
   }
 
+  /** Dashboard KPI metrics — aggregated counts for the manager view */
+  async getMetrics() {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const [
+      openOrders,
+      urgentOrders,
+      inProgressOrders,
+      completedToday,
+      slaAtRisk,
+      unassigned,
+      avgResolution,
+    ] = await Promise.all([
+      // Open = not completed/cancelled
+      this.prisma.workOrder.count({
+        where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } },
+      }),
+      // Urgent priority and still open
+      this.prisma.workOrder.count({
+        where: {
+          priority: 'URGENT',
+          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+        },
+      }),
+      // Currently being worked on
+      this.prisma.workOrder.count({
+        where: { status: { in: ['EN_ROUTE', 'IN_PROGRESS'] } },
+      }),
+      // Completed since midnight today
+      this.prisma.workOrder.count({
+        where: { status: 'COMPLETED', completedAt: { gte: todayStart } },
+      }),
+      // SLA breached or deadline approaching (within 1 hour)
+      this.prisma.workOrder.count({
+        where: {
+          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+          OR: [
+            { slaBreached: true },
+            {
+              slaDeadline: {
+                lte: new Date(now.getTime() + 60 * 60 * 1000),
+                gte: now,
+              },
+            },
+          ],
+        },
+      }),
+      // No technician assigned yet
+      this.prisma.workOrder.count({
+        where: {
+          assignedToId: null,
+          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+        },
+      }),
+      // Average resolution time (completed orders with both timestamps)
+      this.prisma.workOrder.findMany({
+        where: { status: 'COMPLETED', completedAt: { not: null } },
+        select: { createdAt: true, completedAt: true },
+        take: 100,
+        orderBy: { completedAt: 'desc' },
+      }),
+    ]);
+
+    let avgResolutionHours: number | null = null;
+    if (avgResolution.length > 0) {
+      const totalMs = avgResolution.reduce((sum, wo) => {
+        const created = new Date(wo.createdAt).getTime();
+        const completed = new Date(wo.completedAt!).getTime();
+        return sum + (completed - created);
+      }, 0);
+      avgResolutionHours = Math.round((totalMs / avgResolution.length / 3_600_000) * 10) / 10;
+    }
+
+    return {
+      openOrders,
+      urgentOrders,
+      inProgressOrders,
+      completedToday,
+      slaAtRisk,
+      unassigned,
+      avgResolutionHours,
+    };
+  }
+
+  /** List all technicians with their current workload */
+  async getTechnicianSummaries() {
+    const technicians = await this.prisma.user.findMany({
+      where: { role: 'TECHNICIAN', isActive: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        assignedOrders: {
+          where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } },
+          select: { orderNumber: true, status: true },
+          orderBy: { updatedAt: 'desc' },
+        },
+      },
+    });
+
+    return technicians.map((tech) => ({
+      id: tech.id,
+      name: tech.name,
+      email: tech.email,
+      activeOrders: tech.assignedOrders.length,
+      currentStatus: tech.assignedOrders[0]?.status ?? null,
+      currentOrderNumber: tech.assignedOrders[0]?.orderNumber ?? null,
+    }));
+  }
+
   /** Generates a unique order number in format WO-XXXX */
   private async generateOrderNumber(): Promise<string> {
     const count = await this.prisma.workOrder.count();
