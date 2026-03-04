@@ -71,6 +71,13 @@ enum StopStatus {
   SKIPPED
 }
 
+enum EscalationEventType {
+  TRIGGERED
+  ADVANCED
+  ACKNOWLEDGED
+  RESOLVED
+}
+
 enum AgentChannel {
   CHAT
   VOICE
@@ -102,6 +109,8 @@ model User {
   workOrderEvents   WorkOrderEvent[]
   agentSessions     AgentSession[]
   schedules         TechnicianSchedule[]
+  escalationContacts EscalationContact[]
+  escalationAcks     EscalationLog[]    @relation("EscalationAck")
 
   @@index([email])
   @@index([role])
@@ -169,6 +178,7 @@ model WorkOrder {
   events         WorkOrderEvent[]
   agentSessions  AgentSession[]
   scheduleStops  ScheduleStop[]
+  escalationLogs EscalationLog[]
 
   @@index([orderNumber])
   @@index([propertyId])
@@ -254,4 +264,45 @@ model ScheduleStop {
 
   @@index([scheduleId])
   @@index([workOrderId])
+}
+
+model EscalationContact {
+  id             String   @id @default(uuid())
+  userId         String
+  position       Int      // ladder level: 1 = first contact, 2, 3...
+  timeoutSeconds Int      // seconds before advancing to next level
+  label          String   // e.g. "On-Call Dispatcher", "Property Manager"
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  // Relations
+  user           User              @relation(fields: [userId], references: [id])
+  escalationLogs EscalationLog[]
+
+  @@index([userId])
+  @@index([position])
+}
+
+model EscalationLog {
+  id               String              @id @default(uuid())
+  workOrderId      String
+  contactId        String
+  attemptNumber    Int
+  eventType        EscalationEventType
+  reason           String?             // e.g. "SLA breached — URGENT 2h window"
+  ackReceived      Boolean             @default(false)
+  acknowledgedAt   DateTime?
+  acknowledgedById String?
+  ackNotes         String?
+  createdAt        DateTime            @default(now())
+
+  // Relations
+  workOrder        WorkOrder           @relation(fields: [workOrderId], references: [id])
+  contact          EscalationContact   @relation(fields: [contactId], references: [id])
+  acknowledgedBy   User?               @relation("EscalationAck", fields: [acknowledgedById], references: [id])
+
+  @@index([workOrderId])
+  @@index([contactId])
+  @@index([ackReceived])
+  @@index([createdAt])
 }

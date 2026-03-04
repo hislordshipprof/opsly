@@ -172,6 +172,16 @@ export class OpslyGateway
     this.emitToRoom('escalations', 'escalation.triggered', escalation);
   }
 
+  /** Escalation advanced to next contact → managers + admins */
+  emitEscalationAdvanced(escalation: Record<string, unknown>) {
+    this.emitToRoom('escalations', 'escalation.advanced', escalation);
+  }
+
+  /** Escalation acknowledged → managers + admins */
+  emitEscalationAcknowledged(escalation: Record<string, unknown>) {
+    this.emitToRoom('escalations', 'escalation.acknowledged', escalation);
+  }
+
   /** Metrics snapshot updated → managers + admins */
   emitMetricsUpdated(metrics: Record<string, unknown>) {
     this.emitToRoom('metrics:overview', 'metrics.snapshot_updated', metrics);
