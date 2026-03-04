@@ -20,6 +20,12 @@ import { AssignTenantDto } from './dto/assign-tenant.dto.js';
 export class UnitsController {
   constructor(private readonly unitsService: UnitsService) {}
 
+  @Get('by-tenant/:tenantId')
+  @Roles(Role.TENANT, Role.TECHNICIAN, Role.MANAGER, Role.ADMIN)
+  findByTenant(@Param('tenantId', ParseUUIDPipe) tenantId: string) {
+    return this.unitsService.findByTenant(tenantId);
+  }
+
   @Get(':id')
   @Roles(Role.TENANT, Role.MANAGER, Role.ADMIN)
   findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req: any) {

@@ -7,6 +7,8 @@ import { WorkOrdersModule } from './work-orders/work-orders.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
 import { UnitsModule } from './units/units.module.js';
 import { WebSocketModule } from './websocket/websocket.module.js';
+import { AgentSessionsModule } from './agent-sessions/agent-sessions.module.js';
+import { AiModule } from './ai/ai.module.js';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { WebSocketModule } from './websocket/websocket.module.js';
     PropertiesModule,
     UnitsModule,
     WebSocketModule,
+    AgentSessionsModule,
+    AiModule,
   ],
 })
 export class AppModule {}

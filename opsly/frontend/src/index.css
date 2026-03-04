@@ -1,0 +1,152 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* OPSLY design tokens */
+@theme {
+  --color-opsly-bg: #0A0F1E;
+  --color-opsly-surface: #111827;
+  --color-opsly-border: #1F2937;
+  --color-opsly-text: #F9FAFB;
+  --color-opsly-muted: #6B7280;
+  --color-opsly-urgent: #EF4444;
+  --color-opsly-high: #F59E0B;
+  --color-opsly-medium: #3B82F6;
+  --color-opsly-low: #10B981;
+  --color-opsly-accent: #6366F1;
+}
+
+/* Base styles */
+body {
+  margin: 0;
+  font-family: 'DM Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Light mode (default) — OPSLY branded */
+:root {
+  --radius: 0.625rem;
+  --background: #F9FAFB;
+  --foreground: #111827;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+  --primary: #6366F1;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #111827;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: #F3F4F6;
+  --accent-foreground: #111827;
+  --destructive: #EF4444;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #6366F1;
+  --chart-1: #6366F1;
+  --chart-2: #10B981;
+  --chart-3: #3B82F6;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
+  --sidebar: #F9FAFB;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #6366F1;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F3F4F6;
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #6366F1;
+}
+
+/* Dark mode — OPSLY industrial precision */
+.dark {
+  --background: #0A0F1E;
+  --foreground: #F9FAFB;
+  --card: #111827;
+  --card-foreground: #F9FAFB;
+  --popover: #111827;
+  --popover-foreground: #F9FAFB;
+  --primary: #6366F1;
+  --primary-foreground: #F9FAFB;
+  --secondary: #1F2937;
+  --secondary-foreground: #F9FAFB;
+  --muted: #1F2937;
+  --muted-foreground: #6B7280;
+  --accent: #1F2937;
+  --accent-foreground: #F9FAFB;
+  --destructive: #EF4444;
+  --border: #1F2937;
+  --input: #1F2937;
+  --ring: #6366F1;
+  --chart-1: #6366F1;
+  --chart-2: #10B981;
+  --chart-3: #3B82F6;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
+  --sidebar: #111827;
+  --sidebar-foreground: #F9FAFB;
+  --sidebar-primary: #6366F1;
+  --sidebar-primary-foreground: #F9FAFB;
+  --sidebar-accent: #1F2937;
+  --sidebar-accent-foreground: #F9FAFB;
+  --sidebar-border: #1F2937;
+  --sidebar-ring: #6366F1;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

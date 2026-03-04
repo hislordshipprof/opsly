@@ -19,6 +19,7 @@ import { CreateWorkOrderDto } from './dto/create-work-order.dto.js';
 import { UpdateStatusDto } from './dto/update-status.dto.js';
 import { AssignTechnicianDto } from './dto/assign-technician.dto.js';
 import { QueryWorkOrdersDto } from './dto/query-work-orders.dto.js';
+import { UploadPhotoDto } from './dto/upload-photo.dto.js';
 
 @Controller('work-orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -64,6 +65,18 @@ export class WorkOrdersController {
   ) {
     return this.workOrdersService.assign(
       id, dto, req.user.userId, req.user.role,
+    );
+  }
+
+  @Post(':id/photos')
+  @Roles(Role.TENANT, Role.MANAGER, Role.ADMIN)
+  uploadPhoto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UploadPhotoDto,
+    @Request() req: any,
+  ) {
+    return this.workOrdersService.uploadPhoto(
+      id, dto.imageBase64, dto.mimeType, req.user.userId, req.user.role,
     );
   }
 
