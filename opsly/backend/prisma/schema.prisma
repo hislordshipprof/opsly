@@ -57,6 +57,20 @@ enum WorkOrderEventType {
   COMPLETED
 }
 
+enum ScheduleStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
+enum StopStatus {
+  PENDING
+  EN_ROUTE
+  ARRIVED
+  COMPLETED
+  SKIPPED
+}
+
 enum AgentChannel {
   CHAT
   VOICE
@@ -87,6 +101,7 @@ model User {
   assignedOrders    WorkOrder[]   @relation("AssignedTo")
   workOrderEvents   WorkOrderEvent[]
   agentSessions     AgentSession[]
+  schedules         TechnicianSchedule[]
 
   @@index([email])
   @@index([role])
@@ -153,6 +168,7 @@ model WorkOrder {
   assignedTo     User?              @relation("AssignedTo", fields: [assignedToId], references: [id])
   events         WorkOrderEvent[]
   agentSessions  AgentSession[]
+  scheduleStops  ScheduleStop[]
 
   @@index([orderNumber])
   @@index([propertyId])
@@ -203,4 +219,39 @@ model AgentSession {
   @@index([userId])
   @@index([status])
   @@index([startedAt])
+}
+
+model TechnicianSchedule {
+  id             String         @id @default(uuid())
+  scheduleCode   String         @unique
+  date           DateTime
+  technicianId   String
+  region         String?
+  status         ScheduleStatus @default(PLANNED)
+  createdAt      DateTime       @default(now())
+
+  // Relations
+  technician User           @relation(fields: [technicianId], references: [id])
+  stops      ScheduleStop[]
+
+  @@index([technicianId])
+  @@index([date])
+}
+
+model ScheduleStop {
+  id             String     @id @default(uuid())
+  scheduleId     String
+  workOrderId    String
+  sequenceNumber Int
+  plannedEta     DateTime?
+  actualArrival  DateTime?
+  status         StopStatus @default(PENDING)
+  notes          String?
+
+  // Relations
+  schedule  TechnicianSchedule @relation(fields: [scheduleId], references: [id])
+  workOrder WorkOrder          @relation(fields: [workOrderId], references: [id])
+
+  @@index([scheduleId])
+  @@index([workOrderId])
 }

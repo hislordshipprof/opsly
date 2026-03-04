@@ -190,6 +190,19 @@ export class OpslyGateway
     );
   }
 
+  /** ETA updated → managers + tenant */
+  emitEtaUpdated(
+    workOrder: Record<string, unknown>,
+    tenantUserId: string,
+  ) {
+    this.emitToRoom('ops:all', 'workorder.eta_updated', workOrder);
+    this.emitToRoom(
+      `tenant:${tenantUserId}`,
+      'workorder.eta_updated',
+      workOrder,
+    );
+  }
+
   /** Generic emit to a specific room with standard envelope */
   private emitToRoom(
     room: string,

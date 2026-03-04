@@ -69,11 +69,6 @@ export async function getOpenWorkOrders() {
   return data;
 }
 
-export async function getTechnicianSchedule() {
-  const { data } = await api.get('/work-orders?status=ASSIGNED');
-  return data;
-}
-
 export async function updateWorkOrderStatus(
   id: string,
   status: string,
@@ -125,6 +120,21 @@ export async function getUsers(role?: string) {
 
 export async function getProperties() {
   const { data } = await api.get('/properties');
+  return data;
+}
+
+// ─── Technician Schedule APIs ─────────────────────────
+
+export async function getTechnicianSchedule(date?: string) {
+  const { data } = await api.get('/schedules', { params: date ? { date } : {} });
+  return data;
+}
+
+export async function updateStopStatus(stopId: string, status: string, notes?: string) {
+  const { data } = await api.patch(`/schedules/stops/${stopId}/status`, {
+    status,
+    ...(notes && { notes }),
+  });
   return data;
 }
 

@@ -5,6 +5,7 @@ import { Role } from '@/types';
 import LoginPage from '@/pages/LoginPage';
 import TenantReportPage from '@/pages/TenantReportPage';
 import ManagerDashboardPage from '@/pages/ManagerDashboardPage';
+import TechnicianDashboardPage from '@/pages/TechnicianDashboardPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,7 +37,7 @@ function RoleRedirect() {
     case Role.TENANT:
       return <Navigate to="/tenant/report" replace />;
     case Role.TECHNICIAN:
-      return <Navigate to="/tenant/report" replace />;
+      return <Navigate to="/technician" replace />;
     default:
       return <Navigate to="/login" replace />;
   }
@@ -56,6 +57,16 @@ export default function App() {
               element={
                 <ProtectedRoute roles={[Role.MANAGER, Role.ADMIN]}>
                   <ManagerDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Technician dashboard */}
+            <Route
+              path="/technician"
+              element={
+                <ProtectedRoute roles={[Role.TECHNICIAN]}>
+                  <TechnicianDashboardPage />
                 </ProtectedRoute>
               }
             />

@@ -17,4 +17,5 @@ export const QUERY_KEYS = {
   technicians: () => ['work-orders', 'technicians'] as const,
   users: (role?: string) => ['users', role] as const,
   properties: () => ['properties'] as const,
+  schedule: (date?: string) => ['schedules', date] as const,
 } as const;
