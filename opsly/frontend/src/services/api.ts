@@ -138,4 +138,18 @@ export async function updateStopStatus(stopId: string, status: string, notes?: s
   return data;
 }
 
+// ─── Escalation APIs ─────────────────────────────────
+
+export async function getActiveEscalations() {
+  const { data } = await api.get('/escalations');
+  return data;
+}
+
+export async function acknowledgeEscalation(escalationId: string, notes?: string) {
+  const { data } = await api.patch(`/escalations/${escalationId}/acknowledge`, {
+    ...(notes && { notes }),
+  });
+  return data;
+}
+
 export default api;

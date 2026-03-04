@@ -242,11 +242,24 @@ async function main() {
     console.log(`  Schedule: ${schedule.scheduleCode} — ${mikeOrders.length} stops`);
   }
 
-  console.log('Seed complete.');
+  // ─── Escalation Contacts (3-level ladder) ──────────
+  await prisma.escalationContact.deleteMany();
+
+  await prisma.escalationContact.createMany({
+    data: [
+      { userId: tech.id,    position: 1, timeoutSeconds: 1800, label: 'On-Call Dispatcher' },
+      { userId: manager.id, position: 2, timeoutSeconds: 1800, label: 'Property Manager' },
+      { userId: admin.id,   position: 3, timeoutSeconds: 1800, label: 'Building Admin' },
+    ],
+  });
+  console.log('  Escalation Contacts: 3-level ladder (Dispatcher → Manager → Admin)');
+
+  console.log('\nSeed complete.');
   console.log(`  Users: 6 (admin, manager, technician, 3 tenants)`);
   console.log(`  Properties: ${prop1.name}, ${prop2.name}`);
   console.log('  Units: 8 total (4 occupied)');
   console.log('  Work Orders: 10 (2 REPORTED, 2 ASSIGNED, 2 IN_PROGRESS, 2 COMPLETED, 1 URGENT, 1 ESCALATED)');
+  console.log('  Escalation Contacts: 3 levels');
   console.log('\n  Login with any email: password123');
 }
 

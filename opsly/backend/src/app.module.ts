@@ -10,6 +10,7 @@ import { WebSocketModule } from './websocket/websocket.module.js';
 import { AgentSessionsModule } from './agent-sessions/agent-sessions.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { SchedulesModule } from './schedules/schedules.module.js';
+import { EscalationsModule } from './escalations/escalations.module.js';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { SchedulesModule } from './schedules/schedules.module.js';
     AgentSessionsModule,
     AiModule,
     SchedulesModule,
+    EscalationsModule,
   ],
 })
 export class AppModule {}
