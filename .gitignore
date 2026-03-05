@@ -1,15 +1,14 @@
 # Reference repo — never commit
 CallSphere/
 
-# Claude config — local only
-.claude/
-opsly/.claude/
-CLAUDE.md
-opsly/CLAUDE.md
-
-# Task tracking & PRD — local only
-opsly/.tasks/
-opsly/OPSLY_PRD.md
+# Claude config — track team settings, ignore personal
+.claude/settings.local.json
+.claude/plans/
+opsly/.claude/settings.local.json
+opsly/.claude/plans/
+opsly/.claude/skills/superdesign/
+# Task tracking, PRD, and build instructions — shared with team
+# (no exclusions — these are tracked)
 
 # Dependencies
 node_modules/
