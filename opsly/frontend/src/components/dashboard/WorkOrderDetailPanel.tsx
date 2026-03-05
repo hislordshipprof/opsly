@@ -129,7 +129,7 @@ export function WorkOrderDetailPanel() {
       />
 
       {/* Slide-out panel */}
-      <div className="fixed top-0 right-0 bottom-0 w-[480px] z-50 animate-in slide-in-from-right duration-300">
+      <div className="fixed top-0 right-0 bottom-0 w-full sm:w-[480px] z-50 animate-in slide-in-from-right duration-300">
         <div className="h-full glass-card-heavy rounded-l-3xl overflow-hidden flex flex-col">
           {/* Header with close button */}
           <div className="p-6 pb-4 border-b border-border/50 shrink-0">

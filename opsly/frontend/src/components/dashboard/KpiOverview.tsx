@@ -141,10 +141,10 @@ export function KpiOverview() {
   const metrics = computeKpis(workOrders);
 
   return (
-    <div className="glass-strip px-6 py-4">
-      <div className="flex items-center justify-between gap-6">
+    <div className="glass-strip px-4 sm:px-6 py-4 overflow-x-auto">
+      <div className="flex items-center justify-between gap-4 sm:gap-6 min-w-[500px]">
         {metrics.map((metric, idx) => (
-          <div key={metric.label} className="flex items-center gap-6 min-w-0">
+          <div key={metric.label} className="flex items-center gap-4 sm:gap-6 min-w-0">
             <MetricItem metric={metric} />
             {idx < metrics.length - 1 && (
               <div className="h-10 w-px bg-border/50 flex-shrink-0" />

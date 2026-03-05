@@ -84,6 +84,7 @@ export function WorkOrderTable() {
           <span className="text-xs text-muted-foreground font-mono">{workOrders.length} results</span>
         </div>
       </div>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow className="border-border/50 hover:bg-transparent bg-white/20 dark:bg-transparent">
@@ -160,6 +161,7 @@ export function WorkOrderTable() {
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

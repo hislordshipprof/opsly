@@ -185,6 +185,13 @@ export default function TechnicianDashboardPage() {
     }
   }, [recommendedStop?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Clear active selection when all jobs are done so "All clear" renders
+  useEffect(() => {
+    if (remaining === 0 && stops.length > 0) {
+      setActiveStopId(null);
+    }
+  }, [remaining, stops.length]);
+
   return (
     <div className="min-h-screen">
       {/* ── Nav ─────────────────────────────────────────── */}

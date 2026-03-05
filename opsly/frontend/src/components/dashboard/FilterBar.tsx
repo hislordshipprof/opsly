@@ -37,12 +37,12 @@ export function FilterBar() {
   const { filters, setFilter, clearFilters } = useDashboardStore();
   const [search, setSearch] = useState('');
 
-  const { data: properties } = useQuery<Array<{ id: string; name: string }>>({
+  const { data: properties, isLoading: propertiesLoading } = useQuery<Array<{ id: string; name: string }>>({
     queryKey: QUERY_KEYS.properties(),
     queryFn: getProperties,
   });
 
-  const { data: technicians } = useQuery<Array<{ id: string; name: string }>>({
+  const { data: technicians, isLoading: techniciansLoading } = useQuery<Array<{ id: string; name: string }>>({
     queryKey: QUERY_KEYS.users('TECHNICIAN'),
     queryFn: () => getUsers('TECHNICIAN'),
   });
@@ -60,9 +60,15 @@ export function FilterBar() {
           <SelectValue placeholder="All Properties" />
         </SelectTrigger>
         <SelectContent position="popper" className="rounded-xl border border-border bg-popover shadow-lg backdrop-blur-xl">
-          {properties?.map((p) => (
-            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-          ))}
+          {propertiesLoading ? (
+            <div className="px-3 py-2 text-xs text-muted-foreground animate-pulse">Loading...</div>
+          ) : properties?.length === 0 ? (
+            <div className="px-3 py-2 text-xs text-muted-foreground">No properties</div>
+          ) : (
+            properties?.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+            ))
+          )}
         </SelectContent>
       </Select>
 
@@ -105,9 +111,15 @@ export function FilterBar() {
           <SelectValue placeholder="All Technicians" />
         </SelectTrigger>
         <SelectContent position="popper" className="rounded-xl border border-border bg-popover shadow-lg backdrop-blur-xl">
-          {technicians?.map((t) => (
-            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-          ))}
+          {techniciansLoading ? (
+            <div className="px-3 py-2 text-xs text-muted-foreground animate-pulse">Loading...</div>
+          ) : technicians?.length === 0 ? (
+            <div className="px-3 py-2 text-xs text-muted-foreground">No technicians</div>
+          ) : (
+            technicians?.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+            ))
+          )}
         </SelectContent>
       </Select>
 

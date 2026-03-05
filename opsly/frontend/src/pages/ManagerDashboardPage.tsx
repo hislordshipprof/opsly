@@ -82,7 +82,7 @@ export default function ManagerDashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[1600px] mx-auto px-6 py-6 space-y-6">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* KPI Cards */}
         <KpiCards />
 
@@ -108,7 +108,7 @@ export default function ManagerDashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="max-w-[1600px] mx-auto px-6 py-10">
+      <footer className="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
         <div className="glass-strip px-6 py-5 flex flex-col md:flex-row justify-between items-center text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
           <p>&copy; 2026 OPSLY Infrastructure Systems</p>
           <div className="flex gap-8 mt-4 md:mt-0">

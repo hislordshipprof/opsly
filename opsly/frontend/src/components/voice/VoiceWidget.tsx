@@ -5,6 +5,9 @@ import MicButton from './MicButton';
 import ConnectionBadge from './ConnectionBadge';
 import TranscriptDisplay from './TranscriptDisplay';
 import FallbackTextInput from './FallbackTextInput';
+import AudioVisualizer from './AudioVisualizer';
+import AgentStatusBadge from './AgentStatusBadge';
+import ActionConfirmation from './ActionConfirmation';
 import * as api from '@/services/api';
 
 /**
@@ -14,9 +17,25 @@ import * as api from '@/services/api';
  */
 export default function VoiceWidget() {
   const { user } = useAuth();
+  const chatSessionRef = useRef<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /** Route tool calls from Gemini to our backend REST API */
   const handleToolCall = useCallback(async (call: { name: string; args: Record<string, unknown> }) => {
+    setPendingAction(call.name);
+    try {
+      return await executeToolCall(call);
+    } finally {
+      setPendingAction(null);
+    }
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** Execute the actual tool call */
+  async function executeToolCall(call: { name: string; args: Record<string, unknown> }) {
     switch (call.name) {
       case 'get_unit_by_tenant':
         return api.getUnitByTenant((call.args.tenant_id as string) || user?.id || '');
@@ -27,7 +46,6 @@ export default function VoiceWidget() {
           issueCategory: call.args.issue_category as string,
           issueDescription: call.args.issue_description as string,
         });
-        // Store work order ID so we can attach photos to it
         setCurrentWorkOrderId(workOrder.id);
         return workOrder;
       }
@@ -43,7 +61,6 @@ export default function VoiceWidget() {
 
       case 'update_work_order_status': {
         const orderNumber = call.args.order_number as string;
-        // We need to look up the ID from the order number first
         const order = await api.getWorkOrderByNumber(orderNumber);
         return api.updateWorkOrderStatus(
           order.id,
@@ -55,17 +72,11 @@ export default function VoiceWidget() {
       default:
         return { error: `Unknown tool: ${call.name}` };
     }
-  }, [user?.id]);
+  }
 
   const { state, transcript, activeAgent, error, start, stop, setActiveAgent, addTranscript } = useVoiceSession({
     onToolCall: handleToolCall,
   });
-
-  const chatSessionRef = useRef<string | null>(null);
-  const [isSending, setIsSending] = useState(false);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /** Send text via the chat API (fallback when mic is unavailable or user prefers typing) */
   async function handleTextSend(text: string) {
@@ -144,12 +155,18 @@ export default function VoiceWidget() {
     <div className="flex h-full w-full max-w-lg flex-col rounded-lg border border-border bg-card">
       {/* Header — connection status + agent badge */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold">OPSLY Voice</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold">OPSLY Voice</h2>
+          <AgentStatusBadge agentName={activeAgent} isActive={state !== 'IDLE' && state !== 'ERROR'} />
+        </div>
         <ConnectionBadge state={state} agentName={activeAgent} isSending={isSending} />
       </div>
 
       {/* Transcript area */}
       <TranscriptDisplay entries={transcript} />
+
+      {/* Action confirmation — shows what tool the agent is executing */}
+      <ActionConfirmation action={pendingAction} />
 
       {/* Error display */}
       {error && (
@@ -191,6 +208,7 @@ export default function VoiceWidget() {
             )}
           </button>
 
+          <AudioVisualizer state={state} />
           <MicButton state={state} onStart={start} onStop={stop} />
           <div className="flex-1">
             <FallbackTextInput
