@@ -282,8 +282,8 @@ export default function TechnicianDashboardPage() {
           </section>
         )}
 
-        {/* No schedule at all */}
-        {!isLoading && stops.length === 0 && (
+        {/* All jobs completed — or no schedule at all */}
+        {!isLoading && ((stops.length === 0) || (stops.length > 0 && remaining === 0 && !activeStop)) && (
           <div className="flex-1 flex flex-col items-center justify-center py-20 text-center">
             <div className="size-20 rounded-full bg-opsly-low/10 flex items-center justify-center mb-4">
               <span className="text-3xl text-opsly-low">&#10003;</span>

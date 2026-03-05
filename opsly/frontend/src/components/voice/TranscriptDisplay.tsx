@@ -1,5 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { TranscriptEntry } from '@/hooks/useVoiceSession';
+
+/** Lightweight inline markdown: **bold** and " * " list bullets */
+function formatMarkdown(text: string): ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    return part.replace(/ \* /g, ' \u2022 ');
+  });
+}
 
 interface TranscriptDisplayProps {
   entries: TranscriptEntry[];
@@ -34,7 +45,7 @@ export default function TranscriptDisplay({ entries }: TranscriptDisplayProps) {
                 : 'bg-card text-card-foreground border border-border'
             }`}
           >
-            {entry.content}
+            {formatMarkdown(entry.content)}
           </div>
         </div>
       ))}
