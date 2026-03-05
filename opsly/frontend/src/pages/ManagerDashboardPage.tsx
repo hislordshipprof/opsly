@@ -2,17 +2,17 @@ import { useDashboardEvents } from '@/hooks/useWebSocket';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { KpiCards } from '@/components/dashboard/KpiCards';
 import { FilterBar } from '@/components/dashboard/FilterBar';
+import { KpiOverview } from '@/components/dashboard/KpiOverview';
 import { WorkOrderTable } from '@/components/dashboard/WorkOrderTable';
-import { WorkOrderDetail } from '@/components/dashboard/WorkOrderDetail';
+import { WorkOrderDetailPanel } from '@/components/dashboard/WorkOrderDetailPanel';
 import { EscalationFeed } from '@/components/dashboard/EscalationFeed';
 import { TechnicianPanel } from '@/components/dashboard/TechnicianPanel';
 import { AssignTechnicianModal } from '@/components/dashboard/AssignTechnicianModal';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function ManagerDashboardPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { isConnected } = useDashboardEvents();
-  const selectedWorkOrderId = useDashboardStore((s) => s.selectedWorkOrderId);
 
   return (
     <div className="min-h-screen">
@@ -65,6 +65,12 @@ export default function ManagerDashboardPage() {
                 <span className="text-sm font-medium leading-tight">
                   {user?.name ?? user?.email?.split('@')[0] ?? 'Manager'}
                 </span>
+                <button
+                  onClick={logout}
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors mt-0.5"
+                >
+                  Sign out
+                </button>
               </div>
               <div className="size-9 rounded-full bg-indigo-100/80 dark:bg-primary/10 flex items-center justify-center ring-2 ring-white/50 dark:ring-primary/5">
                 <span className="text-xs font-bold text-indigo-700 dark:text-primary">
@@ -84,27 +90,20 @@ export default function ManagerDashboardPage() {
         {/* Filter Bar */}
         <FilterBar />
 
+        {/* KPI Overview Metrics Strip */}
+        <KpiOverview />
+
         {/* Main Grid: Table + Side Panels */}
-        <div className={`grid gap-6 ${
-          selectedWorkOrderId
-            ? 'grid-cols-1 xl:grid-cols-[1fr_380px]'
-            : 'grid-cols-1 xl:grid-cols-[1fr_340px]'
-        }`}>
+        <div className="grid gap-6 grid-cols-1 xl:grid-cols-[1fr_340px]">
           {/* Left: Work Order Table */}
           <div className="min-w-0">
             <WorkOrderTable />
           </div>
 
-          {/* Right: Detail or Side Panels */}
+          {/* Right: Side Panels */}
           <div className="space-y-6">
-            {selectedWorkOrderId ? (
-              <WorkOrderDetail />
-            ) : (
-              <>
-                <EscalationFeed />
-                <TechnicianPanel />
-              </>
-            )}
+            <EscalationFeed />
+            <TechnicianPanel />
           </div>
         </div>
       </main>
@@ -112,7 +111,7 @@ export default function ManagerDashboardPage() {
       {/* Footer */}
       <footer className="max-w-[1600px] mx-auto px-6 py-10">
         <div className="glass-strip px-6 py-5 flex flex-col md:flex-row justify-between items-center text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
-          <p>&copy; 2024 OPSLY Infrastructure Systems</p>
+          <p>&copy; 2026 OPSLY Infrastructure Systems</p>
           <div className="flex gap-8 mt-4 md:mt-0">
             <span className="hover:text-foreground transition-colors cursor-pointer">API Status</span>
             <span className="hover:text-foreground transition-colors cursor-pointer">Docs</span>
@@ -123,6 +122,9 @@ export default function ManagerDashboardPage() {
 
       {/* Assign Technician Modal (global) */}
       <AssignTechnicianModal />
+
+      {/* Work Order Detail Slide-out Panel (global) */}
+      <WorkOrderDetailPanel />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Role } from '@/types';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import TenantReportPage from '@/pages/TenantReportPage';
+import TenantOrdersPage from '@/pages/TenantOrdersPage';
 import ManagerDashboardPage from '@/pages/ManagerDashboardPage';
 import TechnicianDashboardPage from '@/pages/TechnicianDashboardPage';
 
@@ -77,8 +78,16 @@ export default function App() {
             <Route
               path="/tenant/report"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute roles={[Role.TENANT]}>
                   <TenantReportPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tenant/orders"
+              element={
+                <ProtectedRoute roles={[Role.TENANT]}>
+                  <TenantOrdersPage />
                 </ProtectedRoute>
               }
             />

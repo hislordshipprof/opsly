@@ -47,7 +47,7 @@ function TechnicianCard({ tech }: { tech: TechnicianSummary }) {
             'Available'
           ) : (
             <>
-              {statusInfo?.label ?? 'Working'}
+              <span>{statusInfo?.label ?? 'Working'}</span>
               {tech.currentOrderNumber && (
                 <span className="font-mono ml-1">{tech.currentOrderNumber}</span>
               )}

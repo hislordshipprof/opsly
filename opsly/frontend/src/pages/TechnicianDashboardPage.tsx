@@ -161,7 +161,7 @@ function EmptyDetailState({
 /* ── Main Page ────────────────────────────────────────── */
 
 export default function TechnicianDashboardPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { isConnected } = useDashboardEvents();
   const [activeStopId, setActiveStopId] = useState<string | null>(null);
 
@@ -218,6 +218,12 @@ export default function TechnicianDashboardPage() {
                   {user?.email?.charAt(0).toUpperCase() ?? 'T'}
                 </span>
               </div>
+              <button
+                onClick={logout}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Sign out
+              </button>
             </div>
           </div>
         </div>
@@ -272,7 +278,7 @@ export default function TechnicianDashboardPage() {
         )}
 
         {/* ── Detail Panel ────────────────────────────── */}
-        {!isLoading && stops.length > 0 && (
+        {!isLoading && stops.length > 0 && remaining > 0 && (
           <section className="flex-1 flex flex-col min-w-0">
             {activeStop ? (
               <JobDetailPanel stop={activeStop} onBack={() => setActiveStopId(null)} />

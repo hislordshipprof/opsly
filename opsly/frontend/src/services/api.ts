@@ -172,4 +172,44 @@ export async function acknowledgeEscalation(escalationId: string, notes?: string
   return data;
 }
 
+// ─── Photo Assessment APIs ────────────────────────────
+
+export interface PhotoAssessmentResult {
+  aiSeverityScore: number;
+  visionAssessment: {
+    damageType: string;
+    severity: string;
+    confidence: number;
+    description: string;
+    recommendations: string[];
+    recommendedPriority: string;
+  };
+  photoUrl: string;
+}
+
+export async function uploadPhoto(
+  workOrderId: string,
+  file: File,
+): Promise<PhotoAssessmentResult> {
+  // Convert File to base64
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Extract base64 data (remove "data:image/jpeg;base64," prefix)
+      const base64Data = result.split(',')[1];
+      resolve(base64Data);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const { data } = await api.post<PhotoAssessmentResult>(`/work-orders/${workOrderId}/photos`, {
+    imageBase64: base64,
+    mimeType: file.type,
+  });
+
+  return data;
+}
+
 export default api;

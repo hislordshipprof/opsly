@@ -45,6 +45,14 @@ export default function TranscriptDisplay({ entries }: TranscriptDisplayProps) {
                 : 'bg-card text-card-foreground border border-border'
             }`}
           >
+            {entry.metadata?.photoUrl && (
+              <img
+                src={entry.metadata.photoUrl}
+                alt="Uploaded photo"
+                className="max-w-full rounded-md mb-2"
+                style={{ maxWidth: '200px' }}
+              />
+            )}
             {formatMarkdown(entry.content)}
           </div>
         </div>

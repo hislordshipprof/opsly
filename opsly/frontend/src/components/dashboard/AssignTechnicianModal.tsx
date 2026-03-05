@@ -45,8 +45,10 @@ export function AssignTechnicianModal() {
     closeAssignModal();
   };
 
+  const isOpen = !!assignModalOrderId;
+
   return (
-    <Dialog open={!!assignModalOrderId} onOpenChange={(open) => { if (!open) handleClose(); }}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
       <DialogContent className="glass-card-heavy sm:max-w-md border-border">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">Assign Technician</DialogTitle>

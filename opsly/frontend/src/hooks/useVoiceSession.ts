@@ -16,6 +16,9 @@ export interface TranscriptEntry {
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
+  metadata?: {
+    photoUrl?: string;
+  };
 }
 
 interface ToolCall {
@@ -47,12 +50,12 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
     options.onStateChange?.(newState);
   }, [options]);
 
-  const addTranscript = useCallback((role: 'user' | 'assistant', content: string) => {
+  const addTranscript = useCallback((role: 'user' | 'assistant', content: string, metadata?: { photoUrl?: string }) => {
     if (!content.trim()) return;
     setTranscript((prev) => {
       const last = prev[prev.length - 1];
-      // Append to last bubble if same speaker, otherwise start new bubble
-      if (last && last.role === role) {
+      // Append to last bubble if same speaker, otherwise start new bubble (but NOT if metadata is present — photos should be separate)
+      if (last && last.role === role && !metadata && !last.metadata) {
         const updated = [...prev];
         updated[updated.length - 1] = {
           ...last,
@@ -60,7 +63,7 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
         };
         return updated;
       }
-      return [...prev, { role, content: content.trim(), timestamp: Date.now() }];
+      return [...prev, { role, content: content.trim(), timestamp: Date.now(), metadata }];
     });
   }, []);
 
