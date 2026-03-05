@@ -8,6 +8,7 @@ import { StatusBadge } from './StatusBadge';
 import { SlaCountdown } from './SlaCountdown';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import type { VisionAssessment } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import type { WorkOrderDetail as WorkOrderDetailType, WorkOrderEvent } from '@/types';
 
@@ -85,7 +86,7 @@ function EventTimeline({ events }: { events: WorkOrderEvent[] }) {
   );
 }
 
-function VisionCard({ assessment }: { assessment: Record<string, unknown> }) {
+function VisionCard({ assessment }: { assessment: VisionAssessment }) {
   return (
     <div className="bg-card/40 rounded-xl p-4 space-y-2">
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -113,11 +114,11 @@ function VisionCard({ assessment }: { assessment: Record<string, unknown> }) {
           <span className="font-medium">{String(assessment.recommendedPriority ?? '--')}</span>
         </div>
       </div>
-      {assessment.description && (
+      {assessment.description ? (
         <p className="text-xs text-muted-foreground mt-1">
           {String(assessment.description)}
         </p>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -232,7 +233,7 @@ export function WorkOrderDetail() {
       {/* AI Vision Assessment */}
       {workOrder.visionAssessment && (
         <div className="px-6 pt-4">
-          <VisionCard assessment={workOrder.visionAssessment as Record<string, unknown>} />
+          <VisionCard assessment={workOrder.visionAssessment} />
         </div>
       )}
 

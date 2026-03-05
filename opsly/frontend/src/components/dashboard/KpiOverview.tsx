@@ -53,9 +53,9 @@ function computeKpis(workOrders: WorkOrderListItem[]): KpiMetric[] {
     WorkOrderStatus.IN_PROGRESS,
     WorkOrderStatus.NEEDS_PARTS,
     WorkOrderStatus.ESCALATED,
-  ];
+  ] as const;
   const oldOpenOrders = activeOrders.filter(wo =>
-    openStatuses.includes(wo.status) && new Date(wo.createdAt).getTime() < oneDayAgo
+    (openStatuses as readonly string[]).includes(wo.status) && new Date(wo.createdAt).getTime() < oneDayAgo
   ).length;
 
   return [

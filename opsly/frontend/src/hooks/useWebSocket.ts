@@ -22,7 +22,12 @@ export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      console.warn('[WebSocket] No auth token available, skipping connection');
+      return;
+    }
+
+    console.log('[WebSocket] Attempting to connect to', WS_URL);
 
     const socket = io(WS_URL, {
       auth: { token },
@@ -32,8 +37,19 @@ export function useWebSocket() {
       reconnectionDelay: 1000,
     });
 
-    socket.on('connect', () => setIsConnected(true));
-    socket.on('disconnect', () => setIsConnected(false));
+    socket.on('connect', () => {
+      console.log('[WebSocket] Connected successfully');
+      setIsConnected(true);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('[WebSocket] Disconnected:', reason);
+      setIsConnected(false);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('[WebSocket] Connection error:', error.message);
+    });
 
     socketRef.current = socket;
 

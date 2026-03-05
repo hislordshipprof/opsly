@@ -16,7 +16,7 @@ import { WsAuthGuard, WsUser } from './guards/ws-auth.guard.js';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: true, // Allow all origins for now - will use env config in production
     credentials: true,
   },
 })
@@ -31,7 +31,9 @@ export class OpslyGateway
   constructor(
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    this.logger.log('WebSocket gateway instance created');
+  }
 
   /** Register auth middleware — rejects before 'connect' event fires */
   afterInit(server: Server) {
@@ -41,6 +43,7 @@ export class OpslyGateway
         socket.handshake.headers.authorization?.replace('Bearer ', '');
 
       if (!token) {
+        this.logger.warn('WebSocket connection rejected: Missing authentication token');
         return next(new Error('Missing authentication token'));
       }
 
@@ -51,8 +54,11 @@ export class OpslyGateway
           email: payload.email,
           role: payload.role,
         } as WsUser;
+        this.logger.debug(`WebSocket auth successful: ${payload.email} (${payload.role})`);
         next();
-      } catch {
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        this.logger.error(`WebSocket JWT verification failed: ${message}`);
         next(new Error('Invalid or expired token'));
       }
     });

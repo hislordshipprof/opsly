@@ -1,52 +1,57 @@
 // ─── Enums (mirror Prisma schema exactly) ──────────────
 
-export enum Role {
-  TENANT = 'TENANT',
-  TECHNICIAN = 'TECHNICIAN',
-  MANAGER = 'MANAGER',
-  ADMIN = 'ADMIN',
-}
+export const Role = {
+  TENANT: 'TENANT',
+  TECHNICIAN: 'TECHNICIAN',
+  MANAGER: 'MANAGER',
+  ADMIN: 'ADMIN',
+} as const;
+export type Role = typeof Role[keyof typeof Role];
 
-export enum WorkOrderStatus {
-  REPORTED = 'REPORTED',
-  TRIAGED = 'TRIAGED',
-  ASSIGNED = 'ASSIGNED',
-  EN_ROUTE = 'EN_ROUTE',
-  IN_PROGRESS = 'IN_PROGRESS',
-  NEEDS_PARTS = 'NEEDS_PARTS',
-  COMPLETED = 'COMPLETED',
-  ESCALATED = 'ESCALATED',
-  CANCELLED = 'CANCELLED',
-}
+export const WorkOrderStatus = {
+  REPORTED: 'REPORTED',
+  TRIAGED: 'TRIAGED',
+  ASSIGNED: 'ASSIGNED',
+  EN_ROUTE: 'EN_ROUTE',
+  IN_PROGRESS: 'IN_PROGRESS',
+  NEEDS_PARTS: 'NEEDS_PARTS',
+  COMPLETED: 'COMPLETED',
+  ESCALATED: 'ESCALATED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type WorkOrderStatus = typeof WorkOrderStatus[keyof typeof WorkOrderStatus];
 
-export enum Priority {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-  URGENT = 'URGENT',
-}
+export const Priority = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT',
+} as const;
+export type Priority = typeof Priority[keyof typeof Priority];
 
-export enum IssueCategory {
-  PLUMBING = 'PLUMBING',
-  ELECTRICAL = 'ELECTRICAL',
-  HVAC = 'HVAC',
-  STRUCTURAL = 'STRUCTURAL',
-  APPLIANCE = 'APPLIANCE',
-  PEST = 'PEST',
-  LOCKSMITH = 'LOCKSMITH',
-  OTHER = 'OTHER',
-}
+export const IssueCategory = {
+  PLUMBING: 'PLUMBING',
+  ELECTRICAL: 'ELECTRICAL',
+  HVAC: 'HVAC',
+  STRUCTURAL: 'STRUCTURAL',
+  APPLIANCE: 'APPLIANCE',
+  PEST: 'PEST',
+  LOCKSMITH: 'LOCKSMITH',
+  OTHER: 'OTHER',
+} as const;
+export type IssueCategory = typeof IssueCategory[keyof typeof IssueCategory];
 
-export enum WorkOrderEventType {
-  CREATED = 'CREATED',
-  STATUS_CHANGED = 'STATUS_CHANGED',
-  TECHNICIAN_ASSIGNED = 'TECHNICIAN_ASSIGNED',
-  PHOTO_UPLOADED = 'PHOTO_UPLOADED',
-  ETA_UPDATED = 'ETA_UPDATED',
-  NOTE_ADDED = 'NOTE_ADDED',
-  ESCALATED = 'ESCALATED',
-  COMPLETED = 'COMPLETED',
-}
+export const WorkOrderEventType = {
+  CREATED: 'CREATED',
+  STATUS_CHANGED: 'STATUS_CHANGED',
+  TECHNICIAN_ASSIGNED: 'TECHNICIAN_ASSIGNED',
+  PHOTO_UPLOADED: 'PHOTO_UPLOADED',
+  ETA_UPDATED: 'ETA_UPDATED',
+  NOTE_ADDED: 'NOTE_ADDED',
+  ESCALATED: 'ESCALATED',
+  COMPLETED: 'COMPLETED',
+} as const;
+export type WorkOrderEventType = typeof WorkOrderEventType[keyof typeof WorkOrderEventType];
 
 // ─── API Response Types ────────────────────────────────
 
@@ -80,6 +85,7 @@ export interface WorkOrderListItem {
   issueDescription: string;
   status: WorkOrderStatus;
   priority: Priority;
+  aiSeverityScore: number | null;
   slaDeadline: string | null;
   slaBreached: boolean;
   createdAt: string;
@@ -149,13 +155,14 @@ export interface TechnicianSummary {
 
 // ─── Technician Schedule Types ─────────────────────────
 
-export enum StopStatus {
-  PENDING = 'PENDING',
-  EN_ROUTE = 'EN_ROUTE',
-  ARRIVED = 'ARRIVED',
-  COMPLETED = 'COMPLETED',
-  SKIPPED = 'SKIPPED',
-}
+export const StopStatus = {
+  PENDING: 'PENDING',
+  EN_ROUTE: 'EN_ROUTE',
+  ARRIVED: 'ARRIVED',
+  COMPLETED: 'COMPLETED',
+  SKIPPED: 'SKIPPED',
+} as const;
+export type StopStatus = typeof StopStatus[keyof typeof StopStatus];
 
 export interface ScheduleStop {
   id: string;
@@ -182,7 +189,7 @@ export interface ScheduleStop {
       floor: number | null;
       property: { name: string; address: string };
     };
-    reportedBy: { name: string };
+    reportedBy: { name: string; email: string };
   };
 }
 

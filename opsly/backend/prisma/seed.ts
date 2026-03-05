@@ -104,91 +104,112 @@ async function main() {
     units[def.unitNumber] = { id: unit.id, propertyId: def.propertyId };
   }
 
-  // ─── Work Orders (10) ─────────────────────────────
-  // Distributed across 3 technicians for realistic dashboard
+  // ─── Work Orders (10) — Tuned for clean demo narrative ─────
+  // Order numbers start at WO-2840 to match PRD demo script
+  // Mix of statuses: REPORTED (fresh), ASSIGNED, IN_PROGRESS, COMPLETED (met SLA), ESCALATED (breached)
   const workOrders = [
-    // 2x REPORTED (unassigned) — manager can assign from dashboard
+    // 3x REPORTED (fresh, SLA counting) — manager can assign from dashboard
     {
-      orderNumber: 'WO-0001', unit: '4B', reporter: tenant1.id,
+      orderNumber: 'WO-2840', unit: '4B', reporter: tenant1.id,
       category: IssueCategory.PLUMBING,
       description: 'Kitchen sink is leaking under the cabinet, water pooling on floor',
       status: WorkOrderStatus.REPORTED, priority: Priority.HIGH,
-      slaDeadline: hoursFromNow(3), createdAt: hoursAgo(1),
+      slaDeadline: hoursFromNow(5), createdAt: hoursAgo(1), // 5h left, created 1h ago
+      aiSeverityScore: 0.87,
     },
     {
-      orderNumber: 'WO-0002', unit: '101', reporter: tenant3.id,
+      orderNumber: 'WO-2841', unit: '101', reporter: tenant3.id,
       category: IssueCategory.ELECTRICAL,
       description: 'Living room ceiling light flickers constantly and makes buzzing noise',
       status: WorkOrderStatus.REPORTED, priority: Priority.MEDIUM,
-      slaDeadline: hoursFromNow(22), createdAt: hoursAgo(2),
+      slaDeadline: hoursFromNow(22), createdAt: minsAgo(45), // 22h left, fresh report
+      aiSeverityScore: 0.68,
+    },
+    {
+      orderNumber: 'WO-2842', unit: '2A', reporter: tenant2.id,
+      category: IssueCategory.APPLIANCE,
+      description: 'Refrigerator making unusual grinding noise, food not staying cold enough',
+      status: WorkOrderStatus.REPORTED, priority: Priority.HIGH,
+      slaDeadline: hoursFromNow(4), createdAt: minsAgo(30), // 4h left, just reported
+      aiSeverityScore: 0.82,
     },
 
-    // 2x ASSIGNED (distributed across technicians)
+    // 2x ASSIGNED (technicians assigned, not yet started)
     {
-      orderNumber: 'WO-0003', unit: '2A', reporter: tenant2.id, assignee: tech2.id,
+      orderNumber: 'WO-2843', unit: '2A', reporter: tenant2.id, assignee: tech2.id,
       category: IssueCategory.HVAC,
       description: 'Air conditioning unit not cooling, blowing warm air only',
       status: WorkOrderStatus.ASSIGNED, priority: Priority.HIGH,
-      slaDeadline: hoursFromNow(2), createdAt: hoursAgo(2),
+      slaDeadline: hoursFromNow(4.5), createdAt: hoursAgo(1.5), // 4.5h left
+      aiSeverityScore: 0.79,
     },
     {
-      orderNumber: 'WO-0004', unit: '4B', reporter: tenant1.id, assignee: tech.id,
+      orderNumber: 'WO-2844', unit: '4B', reporter: tenant1.id, assignee: tech.id,
       category: IssueCategory.APPLIANCE,
       description: 'Dishwasher not draining properly after wash cycle completes',
       status: WorkOrderStatus.ASSIGNED, priority: Priority.MEDIUM,
-      slaDeadline: hoursFromNow(20), createdAt: hoursAgo(4),
+      slaDeadline: hoursFromNow(20), createdAt: hoursAgo(4), // 20h left
+      aiSeverityScore: 0.63,
     },
 
-    // 2x IN_PROGRESS (Mike + Lisa)
+    // 2x IN_PROGRESS (actively being worked on)
     {
-      orderNumber: 'WO-0005', unit: '101', reporter: tenant3.id, assignee: tech.id,
+      orderNumber: 'WO-2845', unit: '101', reporter: tenant3.id, assignee: tech.id,
       category: IssueCategory.LOCKSMITH,
       description: 'Front door lock mechanism is jammed, key turns but door does not open',
       status: WorkOrderStatus.IN_PROGRESS, priority: Priority.URGENT,
-      slaDeadline: hoursFromNow(0.5), createdAt: hoursAgo(1.5),
+      slaDeadline: hoursFromNow(0.5), createdAt: hoursAgo(1.5), // 30min left, urgent
+      aiSeverityScore: 0.94,
     },
     {
-      orderNumber: 'WO-0006', unit: '2A', reporter: tenant2.id, assignee: tech2.id,
+      orderNumber: 'WO-2846', unit: '2A', reporter: tenant2.id, assignee: tech2.id,
       category: IssueCategory.STRUCTURAL,
       description: 'Crack appearing along bedroom wall near the window frame',
       status: WorkOrderStatus.IN_PROGRESS, priority: Priority.LOW,
-      slaDeadline: hoursFromNow(60), createdAt: hoursAgo(12),
+      slaDeadline: hoursFromNow(60), createdAt: hoursAgo(12), // 60h left (low priority)
+      aiSeverityScore: 0.45,
     },
 
-    // 2x COMPLETED (Mike + James)
+    // 2x COMPLETED (successfully met SLA — completedAt BEFORE slaDeadline)
     {
-      orderNumber: 'WO-0007', unit: '4B', reporter: tenant1.id, assignee: tech.id,
+      orderNumber: 'WO-2847', unit: '4B', reporter: tenant1.id, assignee: tech.id,
       category: IssueCategory.PEST,
       description: 'Ants found in kitchen near the sink area, multiple trails visible',
       status: WorkOrderStatus.COMPLETED, priority: Priority.MEDIUM,
-      slaDeadline: hoursAgo(10), createdAt: hoursAgo(34), completedAt: hoursAgo(12),
+      createdAt: hoursAgo(30), // created 30h ago
+      slaDeadline: hoursAgo(6), // deadline was 6h ago (24h SLA)
+      completedAt: hoursAgo(8), // completed 8h ago (16h elapsed — well before deadline)
       resolutionNotes: 'Applied treatment to kitchen perimeter and sealed entry points',
+      aiSeverityScore: 0.71,
     },
     {
-      orderNumber: 'WO-0008', unit: '101', reporter: tenant3.id, assignee: tech3.id,
+      orderNumber: 'WO-2848', unit: '101', reporter: tenant3.id, assignee: tech3.id,
       category: IssueCategory.PLUMBING,
       description: 'Bathroom faucet dripping continuously, wasting water',
       status: WorkOrderStatus.COMPLETED, priority: Priority.LOW,
-      slaDeadline: hoursAgo(20), createdAt: hoursAgo(92), completedAt: hoursAgo(24),
+      createdAt: hoursAgo(80), // created 80h ago
+      slaDeadline: hoursAgo(8), // deadline was 8h ago (72h SLA)
+      completedAt: hoursAgo(10), // completed 10h ago (70h elapsed — met SLA)
       resolutionNotes: 'Replaced faucet washer and tightened connections',
+      aiSeverityScore: 0.42,
     },
 
-    // 1x URGENT — SLA breached, unassigned (triggers L1 escalation)
+    // 2x ESCALATED (SLA breached — show escalation system working)
     {
-      orderNumber: 'WO-0009', unit: '2A', reporter: tenant2.id,
+      orderNumber: 'WO-2849', unit: '2A', reporter: tenant2.id,
       category: IssueCategory.PLUMBING,
       description: 'Water heater making loud banging noises and leaking from the base',
       status: WorkOrderStatus.ESCALATED, priority: Priority.URGENT,
-      slaDeadline: hoursAgo(0.5), slaBreached: true, createdAt: hoursAgo(3),
+      slaDeadline: hoursAgo(0.5), slaBreached: true, createdAt: hoursAgo(3), // breached 30min ago
+      aiSeverityScore: 0.92,
     },
-
-    // 1x ESCALATED — SLA breached, multi-level escalation active
     {
-      orderNumber: 'WO-0010', unit: '4B', reporter: tenant1.id,
+      orderNumber: 'WO-2850', unit: '4B', reporter: tenant1.id,
       category: IssueCategory.ELECTRICAL,
       description: 'Multiple power outlets in bedroom stopped working simultaneously',
       status: WorkOrderStatus.ESCALATED, priority: Priority.URGENT,
-      slaDeadline: hoursAgo(2), slaBreached: true, createdAt: hoursAgo(4),
+      slaDeadline: hoursAgo(2), slaBreached: true, createdAt: hoursAgo(4), // breached 2h ago
+      aiSeverityScore: 0.88,
     },
   ];
 
@@ -205,6 +226,7 @@ async function main() {
         issueDescription: wo.description,
         status: wo.status,
         priority: wo.priority,
+        aiSeverityScore: wo.aiSeverityScore ?? null,
         slaDeadline: wo.slaDeadline,
         slaBreached: wo.slaBreached ?? false,
         resolutionNotes: wo.resolutionNotes ?? null,
@@ -225,23 +247,23 @@ async function main() {
   }
 
   // ─── Extra Work Order Events (richer timelines) ────
-  // WO-0005: REPORTED → ASSIGNED → IN_PROGRESS
-  const wo5 = await prisma.workOrder.findUnique({ where: { orderNumber: 'WO-0005' } });
-  if (wo5) {
+  // WO-2845 (IN_PROGRESS): REPORTED → ASSIGNED → IN_PROGRESS
+  const wo2845 = await prisma.workOrder.findUnique({ where: { orderNumber: 'WO-2845' } });
+  if (wo2845) {
     await prisma.workOrderEvent.createMany({
       data: [
         {
-          workOrderId: wo5.id, eventType: WorkOrderEventType.STATUS_CHANGED,
+          workOrderId: wo2845.id, eventType: WorkOrderEventType.STATUS_CHANGED,
           actorId: manager.id, fromStatus: WorkOrderStatus.REPORTED, toStatus: WorkOrderStatus.ASSIGNED,
           notes: 'Assigned to Mike Thompson', createdAt: hoursAgo(1),
         },
         {
-          workOrderId: wo5.id, eventType: WorkOrderEventType.TECHNICIAN_ASSIGNED,
+          workOrderId: wo2845.id, eventType: WorkOrderEventType.TECHNICIAN_ASSIGNED,
           actorId: manager.id, notes: 'Mike Thompson assigned — urgent lock issue',
           createdAt: hoursAgo(1),
         },
         {
-          workOrderId: wo5.id, eventType: WorkOrderEventType.STATUS_CHANGED,
+          workOrderId: wo2845.id, eventType: WorkOrderEventType.STATUS_CHANGED,
           actorId: tech.id, fromStatus: WorkOrderStatus.ASSIGNED, toStatus: WorkOrderStatus.IN_PROGRESS,
           notes: 'On-site, inspecting lock mechanism', createdAt: minsAgo(30),
         },
@@ -249,18 +271,18 @@ async function main() {
     });
   }
 
-  // WO-0010: REPORTED → ESCALATED (SLA breach events)
-  const wo10 = await prisma.workOrder.findUnique({ where: { orderNumber: 'WO-0010' } });
-  if (wo10) {
+  // WO-2850 (ESCALATED): REPORTED → ESCALATED (SLA breach events)
+  const wo2850 = await prisma.workOrder.findUnique({ where: { orderNumber: 'WO-2850' } });
+  if (wo2850) {
     await prisma.workOrderEvent.createMany({
       data: [
         {
-          workOrderId: wo10.id, eventType: WorkOrderEventType.ESCALATED,
+          workOrderId: wo2850.id, eventType: WorkOrderEventType.ESCALATED,
           notes: 'SLA breached — URGENT 2h window expired, auto-escalation triggered',
           createdAt: hoursAgo(2),
         },
         {
-          workOrderId: wo10.id, eventType: WorkOrderEventType.STATUS_CHANGED,
+          workOrderId: wo2850.id, eventType: WorkOrderEventType.STATUS_CHANGED,
           fromStatus: WorkOrderStatus.REPORTED, toStatus: WorkOrderStatus.ESCALATED,
           notes: 'Escalated to L2 — no L1 acknowledgment', createdAt: hoursAgo(1.5),
         },
@@ -268,37 +290,37 @@ async function main() {
     });
   }
 
-  // WO-0009: SLA breach event
-  const wo9 = await prisma.workOrder.findUnique({ where: { orderNumber: 'WO-0009' } });
-  if (wo9) {
+  // WO-2849 (ESCALATED): SLA breach event
+  const wo2849 = await prisma.workOrder.findUnique({ where: { orderNumber: 'WO-2849' } });
+  if (wo2849) {
     await prisma.workOrderEvent.create({
       data: {
-        workOrderId: wo9.id, eventType: WorkOrderEventType.ESCALATED,
+        workOrderId: wo2849.id, eventType: WorkOrderEventType.ESCALATED,
         notes: 'SLA breached — URGENT water heater, 2h window expired',
         createdAt: minsAgo(30),
       },
     });
   }
 
-  // WO-0007: Full lifecycle events (REPORTED → ASSIGNED → IN_PROGRESS → COMPLETED)
-  const wo7 = await prisma.workOrder.findUnique({ where: { orderNumber: 'WO-0007' } });
-  if (wo7) {
+  // WO-2847 (COMPLETED): Full lifecycle events (REPORTED → ASSIGNED → IN_PROGRESS → COMPLETED)
+  const wo2847 = await prisma.workOrder.findUnique({ where: { orderNumber: 'WO-2847' } });
+  if (wo2847) {
     await prisma.workOrderEvent.createMany({
       data: [
         {
-          workOrderId: wo7.id, eventType: WorkOrderEventType.TECHNICIAN_ASSIGNED,
-          actorId: manager.id, notes: 'Mike Thompson assigned', createdAt: hoursAgo(30),
+          workOrderId: wo2847.id, eventType: WorkOrderEventType.TECHNICIAN_ASSIGNED,
+          actorId: manager.id, notes: 'Mike Thompson assigned', createdAt: hoursAgo(29),
         },
         {
-          workOrderId: wo7.id, eventType: WorkOrderEventType.STATUS_CHANGED,
+          workOrderId: wo2847.id, eventType: WorkOrderEventType.STATUS_CHANGED,
           actorId: tech.id, fromStatus: WorkOrderStatus.ASSIGNED, toStatus: WorkOrderStatus.IN_PROGRESS,
-          notes: 'Arrived on-site', createdAt: hoursAgo(20),
+          notes: 'Arrived on-site', createdAt: hoursAgo(10),
         },
         {
-          workOrderId: wo7.id, eventType: WorkOrderEventType.COMPLETED,
+          workOrderId: wo2847.id, eventType: WorkOrderEventType.COMPLETED,
           actorId: tech.id, fromStatus: WorkOrderStatus.IN_PROGRESS, toStatus: WorkOrderStatus.COMPLETED,
           notes: 'Applied treatment to kitchen perimeter and sealed entry points',
-          createdAt: hoursAgo(12),
+          createdAt: hoursAgo(8),
         },
       ],
     });
@@ -384,12 +406,12 @@ async function main() {
   // Clear any existing logs so re-seeding is clean
   await prisma.escalationLog.deleteMany();
 
-  // WO-0010: Multi-level escalation (L1 triggered 2h ago, L2 advanced 1h ago)
-  if (wo10) {
+  // WO-2850: Multi-level escalation (L1 triggered 2h ago, L2 advanced 1h ago)
+  if (wo2850) {
     await prisma.escalationLog.createMany({
       data: [
         {
-          workOrderId: wo10.id,
+          workOrderId: wo2850.id,
           contactId: contactL1.id,
           attemptNumber: 1,
           eventType: EscalationEventType.TRIGGERED,
@@ -398,7 +420,7 @@ async function main() {
           createdAt: hoursAgo(2),
         },
         {
-          workOrderId: wo10.id,
+          workOrderId: wo2850.id,
           contactId: contactL2.id,
           attemptNumber: 2,
           eventType: EscalationEventType.ADVANCED,
@@ -408,14 +430,14 @@ async function main() {
         },
       ],
     });
-    console.log('  Escalation: WO-0010 — L1 + L2 active (unacknowledged)');
+    console.log('  Escalation: WO-2850 — L1 + L2 active (unacknowledged)');
   }
 
-  // WO-0009: L1 escalation triggered 30min ago (water heater leak)
-  if (wo9) {
+  // WO-2849: L1 escalation triggered 30min ago (water heater leak)
+  if (wo2849) {
     await prisma.escalationLog.create({
       data: {
-        workOrderId: wo9.id,
+        workOrderId: wo2849.id,
         contactId: contactL1.id,
         attemptNumber: 1,
         eventType: EscalationEventType.TRIGGERED,
@@ -424,7 +446,7 @@ async function main() {
         createdAt: minsAgo(30),
       },
     });
-    console.log('  Escalation: WO-0009 — L1 active (unacknowledged)');
+    console.log('  Escalation: WO-2849 — L1 active (unacknowledged)');
   }
 
   // ─── Agent Session (demo: completed tenant voice report) ─
@@ -433,7 +455,7 @@ async function main() {
       userId: tenant1.id,
       role: 'tenant',
       channel: AgentChannel.VOICE,
-      linkedWorkOrderId: wo5?.id ?? null,
+      linkedWorkOrderId: wo2845?.id ?? null,
       status: AgentSessionStatus.COMPLETED,
       lastAgentName: 'tenant-intake',
       startedAt: hoursAgo(1.5),
@@ -442,20 +464,21 @@ async function main() {
         { role: 'user', text: 'Hi, my front door lock is jammed and I can\'t open it' },
         { role: 'agent', text: 'I\'m sorry to hear that. Is this the main entrance or a secondary door?' },
         { role: 'user', text: 'Main entrance, I\'m locked out' },
-        { role: 'agent', text: 'I\'ve created an urgent work order WO-0005. A locksmith will be dispatched within 2 hours.' },
+        { role: 'agent', text: 'I\'ve created an urgent work order WO-2845. A locksmith will be dispatched within 2 hours.' },
       ]),
-      outcome: JSON.stringify({ workOrderCreated: 'WO-0005', priority: 'URGENT', category: 'LOCKSMITH' }),
+      outcome: JSON.stringify({ workOrderCreated: 'WO-2845', priority: 'URGENT', category: 'LOCKSMITH' }),
     },
   });
-  console.log('  Agent Session: 1 completed voice intake (WO-0005)');
+  console.log('  Agent Session: 1 completed voice intake (WO-2845)');
 
   // ─── Summary ──────────────────────────────────────
   console.log('\nSeed complete.');
   console.log('  Users: 8 (admin, manager, 3 technicians, 3 tenants)');
   console.log(`  Properties: ${prop1.name}, ${prop2.name}`);
   console.log('  Units: 8 total (4 occupied)');
-  console.log('  Work Orders: 10 (2 REPORTED, 2 ASSIGNED, 2 IN_PROGRESS, 2 COMPLETED, 2 ESCALATED)');
-  console.log('  Escalations: 3 active (WO-0010 L1+L2, WO-0009 L1)');
+  console.log('  Work Orders: 10 (3 REPORTED, 2 ASSIGNED, 2 IN_PROGRESS, 2 COMPLETED, 2 ESCALATED)');
+  console.log('  Work Order Range: WO-2840 through WO-2850 (matches PRD demo script)');
+  console.log('  Escalations: 3 active (WO-2850 L1+L2, WO-2849 L1)');
   console.log('  Schedules: Mike (2 stops), Lisa (2 stops), James (available)');
   console.log('  Agent Sessions: 1 completed voice intake');
   console.log('\n  Login with any email: password123');

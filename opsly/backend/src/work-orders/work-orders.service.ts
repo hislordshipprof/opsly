@@ -104,6 +104,7 @@ export class WorkOrdersService {
         issueDescription: true,
         status: true,
         priority: true,
+        aiSeverityScore: true,
         slaDeadline: true,
         slaBreached: true,
         createdAt: true,

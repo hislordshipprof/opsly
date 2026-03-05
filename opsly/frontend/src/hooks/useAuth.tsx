@@ -1,11 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { login as apiLogin } from '@/services/api';
-
-interface User {
-  id: string;
-  role: string;
-  email: string;
-}
+import type { User } from '@/types';
 
 interface AuthContextValue {
   token: string | null;

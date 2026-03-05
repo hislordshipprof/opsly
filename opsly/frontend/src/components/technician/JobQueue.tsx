@@ -1,5 +1,4 @@
 import { PriorityBadge } from '@/components/dashboard/PriorityBadge';
-import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { SlaCountdown } from '@/components/dashboard/SlaCountdown';
 import type { ScheduleStop } from '@/types';
 import { StopStatus } from '@/types';

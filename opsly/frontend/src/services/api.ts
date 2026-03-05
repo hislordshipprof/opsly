@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { User } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -15,7 +16,7 @@ api.interceptors.request.use((config) => {
 
 /** Auth */
 export async function login(email: string, password: string) {
-  const { data } = await api.post<{ access_token: string; user: { id: string; role: string; email: string } }>(
+  const { data } = await api.post<{ access_token: string; user: User }>(
     '/auth/login',
     { email, password },
   );

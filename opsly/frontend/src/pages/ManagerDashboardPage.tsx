@@ -1,5 +1,4 @@
 import { useDashboardEvents } from '@/hooks/useWebSocket';
-import { useDashboardStore } from '@/stores/dashboardStore';
 import { KpiCards } from '@/components/dashboard/KpiCards';
 import { FilterBar } from '@/components/dashboard/FilterBar';
 import { KpiOverview } from '@/components/dashboard/KpiOverview';

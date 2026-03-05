@@ -5,6 +5,7 @@ import { useDashboardStore } from '@/stores/dashboardStore';
 import { PriorityBadge } from './PriorityBadge';
 import { StatusBadge } from './StatusBadge';
 import { SlaCountdown } from './SlaCountdown';
+import { AiScoreBadge } from './AiScoreBadge';
 import {
   Table,
   TableBody,
@@ -90,6 +91,7 @@ export function WorkOrderTable() {
             <TableHead className={headerCls}>Unit</TableHead>
             <TableHead className={headerCls}>Issue</TableHead>
             <TableHead className={headerCls}>Priority</TableHead>
+            <TableHead className={headerCls}>AI Score</TableHead>
             <TableHead className={headerCls}>Status</TableHead>
             <TableHead className={headerCls}>Assigned To</TableHead>
             <TableHead className={headerCls}>SLA</TableHead>
@@ -116,6 +118,9 @@ export function WorkOrderTable() {
               </TableCell>
               <TableCell>
                 <PriorityBadge priority={wo.priority} />
+              </TableCell>
+              <TableCell>
+                <AiScoreBadge score={wo.aiSeverityScore} />
               </TableCell>
               <TableCell>
                 <StatusBadge status={wo.status} />
