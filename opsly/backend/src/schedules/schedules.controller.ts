@@ -25,7 +25,7 @@ export class SchedulesController {
   @Get()
   @Roles(Role.TECHNICIAN, Role.MANAGER, Role.ADMIN)
   getSchedule(@Request() req: any, @Query('date') date?: string) {
-    return this.schedulesService.getTechnicianSchedule(req.user.sub, date);
+    return this.schedulesService.getTechnicianSchedule(req.user.userId, date);
   }
 
   /** PATCH /schedules/stops/:id/status — update a stop's status */
@@ -38,7 +38,7 @@ export class SchedulesController {
   ) {
     return this.schedulesService.updateStopStatus(
       id,
-      req.user.sub,
+      req.user.userId,
       dto.status as any,
       dto.notes,
     );
@@ -52,6 +52,6 @@ export class SchedulesController {
     @Body() dto: UpdateStopEtaDto,
     @Request() req: any,
   ) {
-    return this.schedulesService.updateStopEta(id, req.user.sub, dto.eta);
+    return this.schedulesService.updateStopEta(id, req.user.userId, dto.eta);
   }
 }

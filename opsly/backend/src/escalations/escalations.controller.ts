@@ -42,6 +42,6 @@ export class EscalationsController {
     @Body() dto: AcknowledgeEscalationDto,
     @Request() req: any,
   ) {
-    return this.escalationsService.acknowledge(id, req.user.sub, dto.notes);
+    return this.escalationsService.acknowledge(id, req.user.userId, dto.notes);
   }
 }

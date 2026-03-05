@@ -72,7 +72,7 @@ export function WorkOrderTable() {
   if (isLoading) return <TableSkeleton />;
   if (!workOrders?.length) return <EmptyState />;
 
-  const headerCls = "text-[11px] uppercase tracking-widest text-muted-foreground/80 font-semibold py-3";
+  const headerCls = "text-[11px] uppercase tracking-widest text-muted-foreground/80 font-semibold py-3.5";
 
   return (
     <div className="glass-card overflow-hidden">
@@ -85,7 +85,7 @@ export function WorkOrderTable() {
       </div>
       <Table>
         <TableHeader>
-          <TableRow className="border-border/50 hover:bg-transparent">
+          <TableRow className="border-border/50 hover:bg-transparent bg-white/20 dark:bg-transparent">
             <TableHead className={headerCls}>Order</TableHead>
             <TableHead className={headerCls}>Unit</TableHead>
             <TableHead className={headerCls}>Issue</TableHead>
@@ -100,7 +100,7 @@ export function WorkOrderTable() {
           {workOrders.map((wo) => (
             <TableRow
               key={wo.id}
-              className="cursor-pointer border-border/30 transition-colors hover:bg-primary/[0.03]"
+              className="cursor-pointer border-border/30 transition-colors hover:bg-primary/[0.03] [&>td]:py-4"
               onClick={() => selectWorkOrder(wo.id)}
             >
               <TableCell className="font-mono text-sm font-semibold text-primary">
@@ -122,12 +122,17 @@ export function WorkOrderTable() {
               </TableCell>
               <TableCell className="text-sm">
                 {wo.assignedTo ? (
-                  <span className="font-medium">{wo.assignedTo.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="size-6 rounded-full bg-indigo-100/60 dark:bg-primary/10 flex items-center justify-center ring-1 ring-white/50 dark:ring-border text-[10px] font-bold text-indigo-700 dark:text-primary shrink-0">
+                      {wo.assignedTo.name.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="font-medium">{wo.assignedTo.name}</span>
+                  </div>
                 ) : (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 text-xs rounded-full border-dashed border-primary/30 text-primary hover:bg-primary/5"
+                    className="h-7 text-xs rounded-full border-dashed border-gray-400 text-gray-600 hover:bg-white/40 dark:border-primary/30 dark:text-primary dark:hover:bg-primary/5"
                     onClick={(e) => {
                       e.stopPropagation();
                       openAssignModal(wo.id);

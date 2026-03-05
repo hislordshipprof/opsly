@@ -22,6 +22,11 @@ export async function login(email: string, password: string) {
   return data;
 }
 
+export async function register(body: { name: string; email: string; password: string; role: string }) {
+  const { data } = await api.post('/auth/register', body);
+  return data;
+}
+
 /** Voice */
 export interface VoiceTokenResponse {
   sessionId: string;
@@ -42,6 +47,21 @@ export async function endVoiceSession(
   transcript?: Array<{ role: string; content: string }>,
 ) {
   await api.post(`/ai/voice/${sessionId}/end`, { transcript });
+}
+
+/** Chat (text fallback for AI agents) */
+export interface ChatResponse {
+  text: string;
+  sessionId: string;
+  agentName?: string;
+}
+
+export async function chat(message: string, sessionId?: string): Promise<ChatResponse> {
+  const { data } = await api.post<ChatResponse>('/ai/chat', {
+    message,
+    ...(sessionId && { sessionId }),
+  });
+  return data;
 }
 
 /** Work Orders (used by voice tool calls) */

@@ -4,19 +4,19 @@ import { Priority } from '@/types';
 const PRIORITY_CONFIG: Record<Priority, { label: string; className: string }> = {
   [Priority.URGENT]: {
     label: 'Urgent',
-    className: 'bg-opsly-urgent/10 text-opsly-urgent border-opsly-urgent/20 hover:bg-opsly-urgent/15',
+    className: 'bg-rose-50/80 text-rose-800 ring-1 ring-inset ring-rose-600/20 backdrop-blur-sm dark:bg-opsly-urgent/10 dark:text-opsly-urgent dark:ring-opsly-urgent/20',
   },
   [Priority.HIGH]: {
     label: 'High',
-    className: 'bg-opsly-high/10 text-opsly-high border-opsly-high/20 hover:bg-opsly-high/15',
+    className: 'bg-orange-50/80 text-orange-800 ring-1 ring-inset ring-orange-600/20 backdrop-blur-sm dark:bg-opsly-high/10 dark:text-opsly-high dark:ring-opsly-high/20',
   },
   [Priority.MEDIUM]: {
     label: 'Medium',
-    className: 'bg-opsly-medium/10 text-opsly-medium border-opsly-medium/20 hover:bg-opsly-medium/15',
+    className: 'bg-indigo-50/80 text-indigo-800 ring-1 ring-inset ring-indigo-600/20 backdrop-blur-sm dark:bg-opsly-medium/10 dark:text-opsly-medium dark:ring-opsly-medium/20',
   },
   [Priority.LOW]: {
     label: 'Low',
-    className: 'bg-opsly-low/10 text-opsly-low border-opsly-low/20 hover:bg-opsly-low/15',
+    className: 'bg-emerald-50/80 text-emerald-800 ring-1 ring-inset ring-emerald-600/20 backdrop-blur-sm dark:bg-opsly-low/10 dark:text-opsly-low dark:ring-opsly-low/20',
   },
 };
 
@@ -29,7 +29,7 @@ export function PriorityBadge({ priority, className = '' }: PriorityBadgeProps) 
   const config = PRIORITY_CONFIG[priority];
 
   return (
-    <Badge variant="outline" className={`${config.className} text-xs font-semibold ${className}`}>
+    <Badge variant="outline" className={`${config.className} text-xs font-semibold border-transparent ${className}`}>
       {config.label}
     </Badge>
   );

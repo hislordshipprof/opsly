@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPSLY - Crystal Glassmorphism Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        },
+                        slate: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #eef2f6;
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* === Enhanced Crystal Glassmorphism Core === */
+        .glass-crystal {
+            position: relative;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.3) 100%);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 1);
+            border-left: 1px solid rgba(255, 255, 255, 1);
+            box-shadow: 
+                0 15px 35px -5px rgba(31, 38, 135, 0.08),
+                inset 0 2px 5px rgba(255, 255, 255, 1),
+                inset 0 -2px 5px rgba(255, 255, 255, 0.2),
+                inset 2px 0 5px rgba(255, 255, 255, 0.4);
+            border-radius: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Light refraction overlay for panels */
+        .glass-crystal::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(110deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 60%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glass-crystal-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 
+                0 25px 45px -10px rgba(31, 38, 135, 0.12),
+                0 0 20px rgba(255, 255, 255, 0.5),
+                inset 0 2px 5px rgba(255, 255, 255, 1),
+                inset 0 -2px 5px rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.9);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
+        }
+        
+        .glass-crystal-hover:hover::after {
+            opacity: 1;
+        }
+
+        /* Slightly less transparent glass for interactive elements */
+        .glass-button {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.5) 100%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05), inset 0 2px 2px rgba(255, 255, 255, 0.9);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-button:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(31,38,135,0.08), inset 0 2px 3px rgba(255, 255, 255, 1);
+            border-color: rgba(255, 255, 255, 1);
+        }
+
+        /* Inner glass panels (for nesting) */
+        .glass-inner {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            border-left: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 1rem;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6);
+        }
+
+        /* Glowing Status Badges */
+        .badge-crystal-red { background: linear-gradient(135deg, rgba(254, 226, 226, 0.9), rgba(254, 226, 226, 0.5)); color: #dc2626; border: 1px solid rgba(252, 165, 165, 0.9); box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); }
+        .badge-crystal-amber { background: linear-gradient(135deg, rgba(254, 243, 199, 0.9), rgba(254, 243, 199, 0.5)); color: #d97706; border: 1px solid rgba(253, 230, 138, 0.9); box-shadow: 0 0 12px rgba(245, 158, 11, 0.3); }
+        .badge-crystal-blue { background: linear-gradient(135deg, rgba(219, 234, 254, 0.9), rgba(219, 234, 254, 0.5)); color: #1d4ed8; border: 1px solid rgba(191, 219, 254, 0.9); box-shadow: 0 0 12px rgba(59, 130, 246, 0.3); }
+        .badge-crystal-green { background: linear-gradient(135deg, rgba(209, 250, 229, 0.9), rgba(209, 250, 229, 0.5)); color: #047857; border: 1px solid rgba(167, 243, 208, 0.9); box-shadow: 0 0 12px rgba(16, 185, 129, 0.3); }
+        .badge-crystal-gray { background: linear-gradient(135deg, rgba(241, 245, 249, 0.9), rgba(241, 245, 249, 0.5)); color: #334155; border: 1px solid rgba(226, 232, 240, 0.9); }
+
+        /* Enhanced Animations */
+        @keyframes fadeInUpBlur {
+            from { opacity: 0; transform: translateY(30px); filter: blur(8px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        
+        @keyframes numberPop {
+            0% { opacity: 0; transform: scale(0.85); filter: blur(5px); }
+            60% { transform: scale(1.05); filter: blur(0); }
+            100% { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.02); }
+        }
+        
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px currentColor; }
+            50% { opacity: 0.6; transform: scale(0.95); box-shadow: 0 0 2px currentColor; }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUpBlur 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        
+        .animate-number {
+            animation: numberPop 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        .status-pulse { animation: statusPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+
+        /* Custom Scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Table Row Hover */
+        .table-row-crystal {
+            transition: all 0.3s ease;
+        }
+        .table-row-crystal:hover td {
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body class="relative min-h-screen selection:bg-primary-200 selection:text-primary-900">
+
+    <!-- Enhanced Ambient Gradient Background (Softer, crystalline hues) -->
+    <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <div class="absolute top-[-10%] left-[-5%] w-[45vw] h-[45vw] rounded-full bg-blue-400/25 blur-[120px] mix-blend-multiply animate-[float_15s_ease-in-out_infinite]"></div>
+        <div class="absolute top-[10%] right-[-10%] w-[55vw] h-[55vw] rounded-full bg-fuchsia-300/20 blur-[130px] mix-blend-multiply animate-[float_18s_ease-in-out_infinite_reverse]"></div>
+        <div class="absolute bottom-[-10%] left-[20%] w-[65vw] h-[65vw] rounded-full bg-indigo-300/20 blur-[140px] mix-blend-multiply animate-[float_20s_ease-in-out_infinite]"></div>
+    </div>
+
+    <div class="min-h-screen flex flex-col relative z-10">
+        
+        <!-- Header -->
+        <header class="sticky top-0 z-40 px-6 py-4 animate-fade-in-up">
+            <div class="max-w-[1440px] mx-auto">
+                <div class="glass-crystal h-16 px-6 flex items-center justify-between">
+                    <div class="flex items-center gap-8 relative z-10">
+                        <!-- Logo -->
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold tracking-tight text-xl text-slate-900 uppercase drop-shadow-sm">OPSLY</span>
+                        </div>
+                        
+                        <!-- Primary Nav -->
+                        <nav class="hidden md:flex items-center gap-3">
+                            <a href="#" id="nav-dashboard" class="px-5 py-2 bg-primary-600 text-white rounded-full text-sm font-semibold shadow-[0_4px_12px_rgba(37,99,235,0.3)] transition-all hover:bg-primary-700 hover:-translate-y-0.5">
+                                Dashboard
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- Right Actions -->
+                    <div class="flex items-center gap-6 relative z-10">
+                        <!-- System Status -->
+                        <div class="flex items-center gap-2 px-3 py-1.5 glass-inner rounded-full">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 text-emerald-500 status-pulse"></div>
+                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">Live</span>
+                        </div>
+                        
+                        <!-- User Profile -->
+                        <div class="flex items-center gap-3 pl-6 border-l border-white/50">
+                            <div class="w-8 h-8 rounded-full glass-inner border-white/90 flex items-center justify-center text-primary-700 font-bold text-sm shadow-sm">
+                                S
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 hidden sm:block">sarah</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 max-w-[1440px] w-full mx-auto p-6 flex flex-col gap-6">
+            
+            <!-- Top Metrics Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card 1 -->
+                <div class="glass-crystal glass-crystal-hover pt-7 pb-6 px-6 relative animate-fade-in-up delay-100">
+                    <div class="absolute top-0 left-0 right-0 h-[4px] bg-primary-500 shadow-[0_0_12px_rgba(59,130,246,0.6)] z-20"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-3">Open Orders</h3>
+                        <div class="flex items-end justify-between">
+                            <div class="text-6xl font-extrabold text-slate-900 tracking-tight animate-number delay-200 drop-shadow-sm">8</div>
+                        </div>
+                        <p class="text-xs font-medium text-slate-600 mt-2">4 unassigned</p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-crystal glass-crystal-hover pt-7 pb-6 px-6 relative animate-fade-in-up delay-200">
+                    <div class="absolute top-0 left-0 right-0 h-[4px] bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.6)] z-20"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-3">Urgent / SLA Risk</h3>
+                        <div class="flex items-end justify-between">
+                            <div class="text-6xl font-extrabold text-red-600 tracking-tight animate-number delay-300 drop-shadow-[0_2px_4px_rgba(239,68,68,0.3)]">5</div>
+                        </div>
+                        <p class="text-xs font-medium text-slate-600 mt-2">3 urgent, 2 at risk</p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-crystal glass-crystal-hover pt-7 pb-6 px-6 relative animate-fade-in-up delay-300">
+                    <div class="absolute top-0 left-0 right-0 h-[4px] bg-primary-500 shadow-[0_0_12px_rgba(59,130,246,0.6)] z-20"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-3">In Progress</h3>
+                        <div class="flex items-end justify-between">
+                            <div class="text-6xl font-extrabold text-primary-700 tracking-tight animate-number delay-400 drop-shadow-[0_2px_4px_rgba(29,78,216,0.2)]">2</div>
+                        </div>
+                        <p class="text-xs font-medium text-slate-600 mt-2">Avg resolution: 45h</p>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="glass-crystal glass-crystal-hover pt-7 pb-6 px-6 relative animate-fade-in-up delay-400">
+                    <div class="absolute top-0 left-0 right-0 h-[4px] bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.6)] z-20"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-3">Completed Today</h3>
+                        <div class="flex items-end justify-between">
+                            <div class="text-6xl font-extrabold text-emerald-600 tracking-tight animate-number delay-500 drop-shadow-[0_2px_4px_rgba(5,150,105,0.2)]">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="glass-crystal py-3 px-4 flex flex-wrap items-center gap-3 animate-fade-in-up delay-300">
+                <button id="filter-props" class="glass-button px-4 py-2.5 rounded-xl text-sm text-slate-700 font-semibold flex items-center gap-6">
+                    All Properties
+                    <iconify-icon icon="lucide:chevron-down" class="text-slate-500"></iconify-icon>
+                </button>
+                <button id="filter-status" class="glass-button px-4 py-2.5 rounded-xl text-sm text-slate-700 font-semibold flex items-center gap-6">
+                    All Statuses
+                    <iconify-icon icon="lucide:chevron-down" class="text-slate-500"></iconify-icon>
+                </button>
+                <button id="filter-priority" class="glass-button px-4 py-2.5 rounded-xl text-sm text-slate-700 font-semibold flex items-center gap-6">
+                    All Priorities
+                    <iconify-icon icon="lucide:chevron-down" class="text-slate-500"></iconify-icon>
+                </button>
+                <button id="filter-techs" class="glass-button px-4 py-2.5 rounded-xl text-sm text-slate-700 font-semibold flex items-center gap-6">
+                    All Technicians
+                    <iconify-icon icon="lucide:chevron-down" class="text-slate-500"></iconify-icon>
+                </button>
+            </div>
+
+            <!-- Main Layout Grid -->
+            <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6 animate-fade-in-up delay-400">
+                
+                <!-- Left Column: Work Orders Table -->
+                <div class="glass-crystal flex flex-col">
+                    <div class="px-6 py-5 border-b border-white/50 flex items-center justify-between bg-white/30 relative z-10">
+                        <h2 class="text-lg font-bold text-slate-900 tracking-tight">Work Orders</h2>
+                        <span class="text-xs font-bold text-slate-600 uppercase tracking-widest bg-white/40 px-3 py-1 rounded-full border border-white/60">10 results</span>
+                    </div>
+                    
+                    <div class="flex-1 overflow-x-auto no-scrollbar pb-4 relative z-10">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr>
+                                    <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Order</th>
+                                    <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Unit</th>
+                                    <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Issue</th>
+                                    <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Priority</th>
+                                    <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                                    <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Assigned To</th>
+                                    <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">SLA</th>
+                                    <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Reported</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-white/40">
+                                
+                                <!-- Row 1 -->
+                                <tr class="table-row-crystal cursor-pointer">
+                                    <td class="py-4 px-6">
+                                        <a href="#" id="link-wo-0001" class="font-bold text-primary-700 hover:text-primary-900 transition-colors drop-shadow-sm">WO-0001</a>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-700 font-medium">
+                                        12 Maple Street / <span class="font-bold text-slate-900">4B</span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="text-slate-700 font-medium max-w-[200px] truncate">Kitchen sink is leaking under the cabin...</div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-amber">
+                                            High
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-gray">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                                            Reported
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <button id="btn-assign-0001" class="px-4 py-1.5 badge-crystal-blue rounded-full text-xs font-bold hover:-translate-y-0.5 transition-transform">
+                                            Assign
+                                        </button>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-800 font-semibold">
+                                        1h 45m
+                                    </td>
+                                    <td class="py-4 px-6 text-right text-slate-500 text-xs font-medium">
+                                        2h 14m ago
+                                    </td>
+                                </tr>
+
+                                <!-- Row 2 (Urgent) -->
+                                <tr class="table-row-crystal cursor-pointer bg-red-50/20 hover:bg-red-50/40">
+                                    <td class="py-4 px-6">
+                                        <a href="#" id="link-wo-0009" class="font-bold text-primary-700 hover:text-primary-900 transition-colors drop-shadow-sm">WO-0009</a>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-700 font-medium">
+                                        12 Maple Street / <span class="font-bold text-slate-900">2A</span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="text-slate-700 font-medium max-w-[200px] truncate">Water heater making loud banging no...</div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-red">
+                                            Urgent
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-gray">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                                            Reported
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <button id="btn-assign-0009" class="px-4 py-1.5 badge-crystal-blue rounded-full text-xs font-bold hover:-translate-y-0.5 transition-transform">
+                                            Assign
+                                        </button>
+                                    </td>
+                                    <td class="py-4 px-6 text-red-600 font-bold text-xs flex items-center gap-1.5 uppercase tracking-wide">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 status-pulse text-red-500"></span>
+                                        SLA Breached
+                                    </td>
+                                    <td class="py-4 px-6 text-right text-slate-500 text-xs font-medium">
+                                        2h 44m ago
+                                    </td>
+                                </tr>
+
+                                <!-- Row 3 -->
+                                <tr class="table-row-crystal cursor-pointer bg-red-50/20 hover:bg-red-50/40">
+                                    <td class="py-4 px-6">
+                                        <a href="#" id="link-wo-0005" class="font-bold text-primary-700 hover:text-primary-900 transition-colors drop-shadow-sm">WO-0005</a>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-700 font-medium">
+                                        45 Oak Avenue / <span class="font-bold text-slate-900">101</span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="text-slate-700 font-medium max-w-[200px] truncate">Front door lock mechanism is jammed...</div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-red">
+                                            Urgent
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-amber">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 status-pulse text-amber-500"></span>
+                                            In Progress
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6 font-bold text-slate-900">
+                                        Mike Thompson
+                                    </td>
+                                    <td class="py-4 px-6 text-red-600 font-bold text-xs flex items-center gap-1.5 uppercase tracking-wide">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 status-pulse text-red-500"></span>
+                                        SLA Breached
+                                    </td>
+                                    <td class="py-4 px-6 text-right text-slate-500 text-xs font-medium">
+                                        2h 44m ago
+                                    </td>
+                                </tr>
+
+                                <!-- Row 4 -->
+                                <tr class="table-row-crystal cursor-pointer">
+                                    <td class="py-4 px-6">
+                                        <a href="#" id="link-wo-0003" class="font-bold text-primary-700 hover:text-primary-900 transition-colors drop-shadow-sm">WO-0003</a>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-700 font-medium">
+                                        12 Maple Street / <span class="font-bold text-slate-900">2A</span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="text-slate-700 font-medium max-w-[200px] truncate">Air conditioning unit not cooling, blo...</div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-amber">
+                                            High
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-blue">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                                            Assigned
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6 font-bold text-slate-900">
+                                        Mike Thompson
+                                    </td>
+                                    <td class="py-4 px-6 text-amber-600 font-bold text-xs flex items-center gap-1.5 uppercase tracking-wide">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                        45m
+                                    </td>
+                                    <td class="py-4 px-6 text-right text-slate-500 text-xs font-medium">
+                                        3h 14m ago
+                                    </td>
+                                </tr>
+
+                                 <!-- Row 5 -->
+                                 <tr class="table-row-crystal cursor-pointer">
+                                    <td class="py-4 px-6">
+                                        <a href="#" id="link-wo-0002" class="font-bold text-primary-700 hover:text-primary-900 transition-colors drop-shadow-sm">WO-0002</a>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-700 font-medium">
+                                        45 Oak Avenue / <span class="font-bold text-slate-900">101</span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="text-slate-700 font-medium max-w-[200px] truncate">Living room ceiling light flickers const...</div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-blue">
+                                            Medium
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-gray">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                                            Reported
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <button id="btn-assign-0002" class="px-4 py-1.5 badge-crystal-blue rounded-full text-xs font-bold hover:-translate-y-0.5 transition-transform">
+                                            Assign
+                                        </button>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-800 font-semibold">
+                                        20h 45m
+                                    </td>
+                                    <td class="py-4 px-6 text-right text-slate-500 text-xs font-medium">
+                                        3h 14m ago
+                                    </td>
+                                </tr>
+
+                                <!-- Row 6 -->
+                                <tr class="table-row-crystal cursor-pointer">
+                                    <td class="py-4 px-6">
+                                        <a href="#" id="link-wo-0010" class="font-bold text-primary-700 hover:text-primary-900 transition-colors drop-shadow-sm">WO-0010</a>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-700 font-medium">
+                                        12 Maple Street / <span class="font-bold text-slate-900">4B</span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="text-slate-700 font-medium max-w-[200px] truncate">Multiple power outlets in bedroom st...</div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-red">
+                                            Urgent
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-red">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                            Escalated
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <button id="btn-assign-0010" class="px-4 py-1.5 badge-crystal-blue rounded-full text-xs font-bold hover:-translate-y-0.5 transition-transform">
+                                            Assign
+                                        </button>
+                                    </td>
+                                    <td class="py-4 px-6 text-red-600 font-bold text-xs flex items-center gap-1.5 uppercase tracking-wide">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 status-pulse text-red-500"></span>
+                                        SLA Breached
+                                    </td>
+                                    <td class="py-4 px-6 text-right text-slate-500 text-xs font-medium">
+                                        4h 14m ago
+                                    </td>
+                                </tr>
+
+                                <!-- Row 7 -->
+                                <tr class="table-row-crystal cursor-pointer">
+                                    <td class="py-4 px-6">
+                                        <a href="#" id="link-wo-0004" class="font-bold text-primary-700 hover:text-primary-900 transition-colors drop-shadow-sm">WO-0004</a>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-700 font-medium">
+                                        12 Maple Street / <span class="font-bold text-slate-900">4B</span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="text-slate-700 font-medium max-w-[200px] truncate">Dishwasher not draining properly afte...</div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-blue">
+                                            Medium
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide badge-crystal-blue">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-primary-600"></span>
+                                            Assigned
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6 font-bold text-slate-900">
+                                        Mike Thompson
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-800 font-semibold">
+                                        18h 45m
+                                    </td>
+                                    <td class="py-4 px-6 text-right text-slate-500 text-xs font-medium">
+                                        5h 14m ago
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right Column: Context Panels -->
+                <div class="flex flex-col gap-6">
+                    
+                    <!-- Escalations Card -->
+                    <div class="glass-crystal flex flex-col">
+                        <div class="px-6 py-5 border-b border-white/50 flex items-center justify-between bg-white/30 relative z-10">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900">Escalations</h3>
+                                <p class="text-xs font-semibold text-slate-600 mt-0.5">SLA breaches & at-risk</p>
+                            </div>
+                            <span class="badge-crystal-red text-[10px] font-bold w-7 h-7 flex items-center justify-center rounded-full">
+                                1
+                            </span>
+                        </div>
+                        
+                        <div class="p-5 relative z-10">
+                            <!-- Escalation Item -->
+                            <div class="glass-inner p-5 rounded-2xl relative overflow-hidden group hover:-translate-y-1 transition-transform cursor-pointer border-red-200/60 shadow-[inset_0_2px_6px_rgba(255,255,255,0.8)]">
+                                <div class="absolute inset-0 bg-red-100/30 group-hover:bg-red-100/50 transition-colors pointer-events-none"></div>
+                                
+                                <div class="relative z-10">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-extrabold text-red-600 text-sm drop-shadow-[0_1px_2px_rgba(239,68,68,0.2)]">WO-0010</span>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide badge-crystal-red">
+                                                Urgent
+                                            </span>
+                                        </div>
+                                        <div class="text-[10px] font-bold text-red-600 flex items-center gap-1.5 uppercase tracking-wide">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 status-pulse text-red-500"></span>
+                                            SLA Breached
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-sm text-slate-800 font-medium leading-relaxed mb-5">
+                                        12 Maple Street / 4B — Multiple power outlets in bedroom stopped working simultaneously
+                                    </p>
+
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Unassigned</span>
+                                        <button id="btn-escalation-assign" class="px-4 py-2 bg-gradient-to-br from-red-50 to-red-100 text-red-600 border border-red-300 rounded-full text-xs font-bold hover:shadow-[0_4px_12px_rgba(239,68,68,0.2)] hover:-translate-y-0.5 transition-all">
+                                            Assign Now
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technicians Availability -->
+                    <div class="glass-crystal flex flex-col">
+                        <div class="px-6 py-5 border-b border-white/50 flex items-center justify-between bg-white/30 relative z-10">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900">Technicians</h3>
+                                <p class="text-xs font-semibold text-slate-600 mt-0.5">0 of 1 available</p>
+                            </div>
+                            <span class="badge-crystal-amber text-[10px] font-bold w-7 h-7 flex items-center justify-center rounded-full">
+                                0
+                            </span>
+                        </div>
+                        
+                        <div class="p-3 flex-1 relative z-10">
+                            <!-- Tech Item -->
+                            <div class="flex items-center justify-between p-3 rounded-xl hover:bg-white/50 transition-colors cursor-pointer group">
+                                <div class="flex items-center gap-3">
+                                    <div class="relative">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"></div>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-slate-900 group-hover:text-primary-700 transition-colors">Mike Thompson</h4>
+                                        <p class="text-xs font-medium text-slate-600 mt-0.5">In Progress WO-0006</p>
+                                    </div>
+                                </div>
+                                <span class="badge-crystal-amber text-[11px] font-bold px-3 py-1 rounded-full">
+                                    4 jobs
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+</body>
+</html>

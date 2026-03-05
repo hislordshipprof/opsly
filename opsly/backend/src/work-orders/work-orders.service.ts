@@ -118,6 +118,26 @@ export class WorkOrdersService {
     });
   }
 
+  async findByOrderNumber(orderNumber: string, userId: string, userRole: Role) {
+    const workOrder = await this.prisma.workOrder.findUnique({
+      where: { orderNumber },
+      include: {
+        unit: { select: { id: true, unitNumber: true, floor: true } },
+        property: { select: { id: true, name: true, address: true } },
+        reportedBy: { select: { id: true, name: true, email: true } },
+        assignedTo: { select: { id: true, name: true, email: true } },
+        events: { orderBy: { createdAt: 'desc' } },
+      },
+    });
+
+    if (!workOrder) {
+      throw new NotFoundException(`Work order ${orderNumber} not found`);
+    }
+
+    this.enforceAccess(workOrder, userId, userRole);
+    return workOrder;
+  }
+
   async findOne(id: string, userId: string, userRole: Role) {
     const workOrder = await this.prisma.workOrder.findUnique({
       where: { id },

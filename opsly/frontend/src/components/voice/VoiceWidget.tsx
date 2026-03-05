@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useVoiceSession } from '@/hooks/useVoiceSession';
 import { useAuth } from '@/hooks/useAuth';
 import MicButton from './MicButton';
@@ -53,15 +53,27 @@ export default function VoiceWidget() {
     }
   }, [user?.id]);
 
-  const { state, transcript, activeAgent, error, start, stop } = useVoiceSession({
+  const { state, transcript, activeAgent, error, start, stop, setActiveAgent, addTranscript } = useVoiceSession({
     onToolCall: handleToolCall,
   });
 
-  /** Send text as if it were a voice message (fallback path) */
-  function handleTextSend(text: string) {
-    // For text fallback, we'd use the chat API instead
-    // This is a simplified path — full implementation would call POST /ai/chat
-    console.log('Text fallback:', text);
+  const chatSessionRef = useRef<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+
+  /** Send text via the chat API (fallback when mic is unavailable or user prefers typing) */
+  async function handleTextSend(text: string) {
+    addTranscript('user', text);
+    setIsSending(true);
+    try {
+      const res = await api.chat(text, chatSessionRef.current ?? undefined);
+      chatSessionRef.current = res.sessionId;
+      if (res.agentName) setActiveAgent(res.agentName);
+      addTranscript('assistant', res.text);
+    } catch {
+      addTranscript('assistant', 'Sorry, something went wrong. Please try again.');
+    } finally {
+      setIsSending(false);
+    }
   }
 
   return (
@@ -89,7 +101,7 @@ export default function VoiceWidget() {
           <div className="flex-1">
             <FallbackTextInput
               onSend={handleTextSend}
-              disabled={state === 'CONNECTING'}
+              disabled={state === 'CONNECTING' || isSending}
             />
           </div>
         </div>

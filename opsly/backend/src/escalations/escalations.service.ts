@@ -40,9 +40,9 @@ export class EscalationsService {
         data: { slaBreached: true },
       });
 
-      // Check if escalation already exists for this order
+      // Check if ANY escalation already exists for this order (prevents re-triggering)
       const existing = await this.prisma.escalationLog.findFirst({
-        where: { workOrderId: wo.id, ackReceived: false },
+        where: { workOrderId: wo.id },
       });
 
       if (!existing) {
@@ -129,6 +129,21 @@ export class EscalationsService {
 
       if (!nextContact) continue; // Already at highest level
 
+      // Prevent duplicate: check if next level already exists for this WO
+      const alreadyAtNextLevel = await this.prisma.escalationLog.findFirst({
+        where: { workOrderId: log.workOrderId, contactId: nextContact.id },
+      });
+      if (alreadyAtNextLevel) {
+        // Still mark source as superceded even if next level already exists
+        if (!log.ackReceived) {
+          await this.prisma.escalationLog.update({
+            where: { id: log.id },
+            data: { ackReceived: true, eventType: EscalationEventType.RESOLVED },
+          });
+        }
+        continue;
+      }
+
       const advanced = await this.prisma.escalationLog.create({
         data: {
           workOrderId: log.workOrderId,
@@ -141,6 +156,12 @@ export class EscalationsService {
           workOrder: { select: { id: true, orderNumber: true, priority: true, status: true } },
           contact: { include: { user: { select: { name: true, email: true } } } },
         },
+      });
+
+      // Mark the source entry as superceded so it no longer shows as active
+      await this.prisma.escalationLog.update({
+        where: { id: log.id },
+        data: { ackReceived: true, eventType: EscalationEventType.RESOLVED },
       });
 
       this.gateway.emitEscalationAdvanced(advanced as unknown as Record<string, unknown>);
@@ -196,8 +217,10 @@ export class EscalationsService {
         workOrder: {
           select: {
             id: true, orderNumber: true, priority: true, status: true,
-            issueCategory: true, issueDescription: true, slaDeadline: true,
-            unit: { select: { unitNumber: true, property: { select: { address: true } } } },
+            issueCategory: true, issueDescription: true,
+            slaDeadline: true, slaBreached: true,
+            unit: { select: { unitNumber: true, property: { select: { name: true, address: true } } } },
+            assignedTo: { select: { name: true } },
           },
         },
         contact: { include: { user: { select: { name: true, email: true } } } },

@@ -265,5 +265,6 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
     start,
     stop,
     setActiveAgent,
+    addTranscript,
   };
 }

@@ -50,6 +50,12 @@ export class WorkOrdersController {
     return this.workOrdersService.getTechnicianSummaries();
   }
 
+  @Get('by-number/:orderNumber')
+  @Roles(Role.TENANT, Role.TECHNICIAN, Role.MANAGER, Role.ADMIN)
+  findByOrderNumber(@Param('orderNumber') orderNumber: string, @Request() req: any) {
+    return this.workOrdersService.findByOrderNumber(orderNumber, req.user.userId, req.user.role);
+  }
+
   @Get(':id')
   @Roles(Role.TENANT, Role.TECHNICIAN, Role.MANAGER, Role.ADMIN)
   findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req: any) {

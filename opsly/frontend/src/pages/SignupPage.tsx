@@ -1,25 +1,47 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { register } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Role } from '@/types';
 
-export default function LoginPage() {
-  const { login } = useAuth();
+const ROLE_OPTIONS = [
+  { value: Role.TENANT, label: 'Tenant', description: 'Report maintenance issues' },
+  { value: Role.TECHNICIAN, label: 'Technician', description: 'Manage assigned work orders' },
+  { value: Role.MANAGER, label: 'Manager', description: 'Oversee all operations' },
+] as const;
+
+export default function SignupPage() {
   const navigate = useNavigate();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<Role>(Role.TENANT);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+
+    if (name.trim().length < 2) {
+      setError('Name must be at least 2 characters.');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(email, password);
-      navigate('/');
-    } catch {
-      setError('Invalid email or password. Please try again.');
+      await register({ name: name.trim(), email, password, role });
+      navigate('/login');
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === 'object' && 'response' in err
+          ? String((err as { response: { data: { message: string } } }).response?.data?.message ?? '')
+          : '';
+      setError(message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -62,11 +84,12 @@ export default function LoginPage() {
         .animate-float-medium { animation: float-medium 12s ease-in-out infinite; }
         .animate-float-fast { animation: float-fast 6s ease-in-out infinite; }
         .animate-slide-up { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) both; }
-        .animate-slide-up-d1 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both; }
-        .animate-slide-up-d2 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both; }
-        .animate-slide-up-d3 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both; }
-        .animate-slide-up-d4 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both; }
-        .animate-slide-up-d5 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both; }
+        .animate-slide-up-d1 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.08s both; }
+        .animate-slide-up-d2 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.16s both; }
+        .animate-slide-up-d3 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.24s both; }
+        .animate-slide-up-d4 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.32s both; }
+        .animate-slide-up-d5 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.40s both; }
+        .animate-slide-up-d6 { animation: slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.48s both; }
         .animate-slide-right { animation: slide-right-fade 0.8s cubic-bezier(0.4, 0, 0.2, 1) both; }
         .animate-scale-fade { animation: scale-fade 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
         .btn-shimmer {
@@ -103,10 +126,10 @@ export default function LoginPage() {
 
         <div className="relative z-10 space-y-4 animate-slide-right" style={{ animationDelay: '0.2s' }}>
           <h2 className="text-white text-3xl font-bold tracking-tight leading-tight">
-            AI-Powered Property<br />Management Platform
+            Get Started with<br />Smart Operations
           </h2>
           <p className="text-white/70 text-base max-w-sm leading-relaxed">
-            Voice-first maintenance reporting, smart work order routing, and real-time operations visibility.
+            Join the platform that uses voice AI and real-time dashboards to streamline property maintenance.
           </p>
         </div>
 
@@ -117,8 +140,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right — Login form */}
-      <div className="flex-1 flex items-center justify-center bg-background px-6">
+      {/* Right — Signup form */}
+      <div className="flex-1 flex items-center justify-center bg-background px-6 py-10">
         <div className="w-full max-w-[400px]">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10 animate-slide-up">
@@ -130,10 +153,10 @@ export default function LoginPage() {
 
           <div className="space-y-2 mb-8 animate-slide-up">
             <h1 className="text-[30px] font-bold tracking-tight text-foreground">
-              Welcome back
+              Create account
             </h1>
             <p className="text-sm text-muted-foreground">
-              Sign in to your account to continue
+              Set up your profile to get started
             </p>
           </div>
 
@@ -146,13 +169,31 @@ export default function LoginPage() {
 
             <div className="space-y-1.5 animate-slide-up-d1">
               <label
-                htmlFor="email"
+                htmlFor="name"
+                className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground"
+              >
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                placeholder="Jane Smith"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="input-lift w-full h-12 rounded-2xl border border-input bg-secondary px-4 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:ring-[3px] focus:ring-primary/10 hover:border-border"
+              />
+            </div>
+
+            <div className="space-y-1.5 animate-slide-up-d2">
+              <label
+                htmlFor="signup-email"
                 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground"
               >
                 Email Address
               </label>
               <input
-                id="email"
+                id="signup-email"
                 type="email"
                 placeholder="you@company.com"
                 value={email}
@@ -162,25 +203,55 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="space-y-1.5 animate-slide-up-d2">
+            <div className="space-y-1.5 animate-slide-up-d3">
               <label
-                htmlFor="password"
+                htmlFor="signup-password"
                 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground"
               >
                 Password
               </label>
               <input
-                id="password"
+                id="signup-password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Min. 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={8}
                 className="input-lift w-full h-12 rounded-2xl border border-input bg-secondary px-4 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:ring-[3px] focus:ring-primary/10 hover:border-border"
               />
             </div>
 
-            <div className="animate-slide-up-d3">
+            <div className="space-y-1.5 animate-slide-up-d4">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                I am a...
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {ROLE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setRole(opt.value)}
+                    className={`flex flex-col items-center gap-1 rounded-2xl border px-3 py-3 text-center cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.97] ${
+                      role === opt.value
+                        ? 'border-primary/40 bg-primary/5 ring-[3px] ring-primary/10 shadow-md shadow-blue-500/10'
+                        : 'border-input bg-secondary hover:border-border hover:shadow-sm'
+                    }`}
+                  >
+                    <span className={`text-sm font-semibold transition-colors duration-200 ${
+                      role === opt.value ? 'text-primary' : 'text-foreground'
+                    }`}>
+                      {opt.label}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">
+                      {opt.description}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="animate-slide-up-d5">
               <Button
                 type="submit"
                 disabled={loading}
@@ -192,22 +263,22 @@ export default function LoginPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    Signing in...
+                    Creating account...
                   </span>
                 ) : (
-                  'Sign in'
+                  'Create account'
                 )}
               </Button>
             </div>
           </form>
 
-          <p className="mt-8 text-center text-sm text-muted-foreground animate-slide-up-d4">
-            Don't have an account?{' '}
+          <p className="mt-8 text-center text-sm text-muted-foreground animate-slide-up-d6">
+            Already have an account?{' '}
             <Link
-              to="/signup"
+              to="/login"
               className="text-primary font-semibold hover:underline underline-offset-4 transition-colors duration-200 hover:text-primary/80"
             >
-              Create account
+              Sign in
             </Link>
           </p>
         </div>

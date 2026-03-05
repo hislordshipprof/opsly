@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { Role } from '@/types';
 import LoginPage from '@/pages/LoginPage';
+import SignupPage from '@/pages/SignupPage';
 import TenantReportPage from '@/pages/TenantReportPage';
 import ManagerDashboardPage from '@/pages/ManagerDashboardPage';
 import TechnicianDashboardPage from '@/pages/TechnicianDashboardPage';
@@ -50,6 +51,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
 
             {/* Manager dashboard */}
             <Route

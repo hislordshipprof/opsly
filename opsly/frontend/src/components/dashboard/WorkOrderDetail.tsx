@@ -32,12 +32,12 @@ const EVENT_ICONS: Record<string, string> = {
 };
 
 const EVENT_COLORS: Record<string, string> = {
-  CREATED: 'bg-slate-400',
+  CREATED: 'bg-muted-foreground',
   STATUS_CHANGED: 'bg-opsly-medium',
-  TECHNICIAN_ASSIGNED: 'bg-opsly-purple',
+  TECHNICIAN_ASSIGNED: 'bg-primary',
   PHOTO_UPLOADED: 'bg-opsly-teal',
   ETA_UPDATED: 'bg-opsly-high',
-  NOTE_ADDED: 'bg-slate-400',
+  NOTE_ADDED: 'bg-muted-foreground',
   ESCALATED: 'bg-opsly-urgent',
   COMPLETED: 'bg-opsly-low',
 };
@@ -53,7 +53,7 @@ function EventTimeline({ events }: { events: WorkOrderEvent[] }) {
         <div key={event.id} className="flex gap-3 pb-4 last:pb-0">
           {/* Timeline line + dot */}
           <div className="flex flex-col items-center">
-            <div className={`size-7 rounded-full ${EVENT_COLORS[event.eventType] ?? 'bg-slate-400'} flex items-center justify-center shrink-0`}>
+            <div className={`size-7 rounded-full ${EVENT_COLORS[event.eventType] ?? 'bg-muted-foreground'} flex items-center justify-center shrink-0`}>
               <span className="text-[10px] font-bold text-white">
                 {EVENT_ICONS[event.eventType] ?? '?'}
               </span>
