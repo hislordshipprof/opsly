@@ -54,3 +54,9 @@ coverage/
 *.pem
 *.key
 credentials.json
+
+# Superdesign — local design tool files
+opsly/.superdesign/
+opsly/.agents/
+opsly/superdesign-reference.html
+opsly/skills-lock.json
