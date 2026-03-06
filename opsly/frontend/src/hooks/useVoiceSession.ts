@@ -77,7 +77,7 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
       // 1. Get ephemeral token from backend
       const tokenData = await getVoiceToken();
       sessionIdRef.current = tokenData.sessionId;
-      console.log('[Voice] Token received — model:', tokenData.model, 'token length:', tokenData.ephemeralToken?.length, 'token preview:', tokenData.ephemeralToken?.substring(0, 30) + '...');
+      // Token acquired — connect to Gemini Live
 
       // 2. Connect to Gemini Live (ephemeral tokens require v1alpha)
       const ai = new GoogleGenAI({
@@ -107,21 +107,13 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
           outputAudioTranscription: {},
         },
         callbacks: {
-          onopen: () => {
-            console.log('[Voice] Gemini Live WebSocket OPEN — model:', tokenData.model);
-            updateState('LISTENING');
-          },
-          onmessage: (msg: any) => {
-            console.log('[Voice] Gemini message received:', JSON.stringify(msg).substring(0, 200));
-            handleMessage(msg);
-          },
+          onopen: () => updateState('LISTENING'),
+          onmessage: (msg: any) => handleMessage(msg),
           onerror: (e: any) => {
-            console.error('[Voice] Gemini Live ERROR:', e);
             setError(e?.message || 'Voice connection error');
             updateState('ERROR');
           },
-          onclose: (e: any) => {
-            console.log('[Voice] Gemini Live CLOSED:', e);
+          onclose: () => {
             if (state !== 'ERROR') updateState('IDLE');
           },
         },
@@ -130,77 +122,19 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
       sessionRef.current = session;
 
       // 3. Set up audio capture (mic at 16kHz)
-      console.log('[Voice] Requesting mic access...');
       const micStream = await navigator.mediaDevices.getUserMedia({
         audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true },
       });
       streamRef.current = micStream;
-      const audioTrack = micStream.getAudioTracks()[0];
-      const settings = audioTrack?.getSettings();
-      console.log('[Voice] Mic acquired — track:', audioTrack?.label, 'sampleRate:', settings?.sampleRate, 'channels:', settings?.channelCount);
 
       const captureCtx = new AudioContext({ sampleRate: 16000 });
-      console.log('[Voice] AudioContext created — requested: 16000, actual sampleRate:', captureCtx.sampleRate, 'state:', captureCtx.state);
-
-      // --- DIAGNOSTIC: test mic at native rate to isolate resampling issue ---
-      try {
-        const nativeCtx = new AudioContext(); // default rate
-        const nativeSrc = nativeCtx.createMediaStreamSource(micStream);
-        const analyser = nativeCtx.createAnalyser();
-        analyser.fftSize = 2048;
-        nativeSrc.connect(analyser);
-        const buf = new Float32Array(analyser.fftSize);
-        let diagCount = 0;
-        const diagInterval = setInterval(() => {
-          analyser.getFloatTimeDomainData(buf);
-          let max = 0;
-          for (let i = 0; i < buf.length; i++) {
-            const a = Math.abs(buf[i]);
-            if (a > max) max = a;
-          }
-          diagCount++;
-          console.log(`[Voice][DIAG] Native ctx (${nativeCtx.sampleRate}Hz) frame #${diagCount}: maxAmp=${max.toFixed(6)}`);
-          if (diagCount >= 5) {
-            clearInterval(diagInterval);
-            nativeSrc.disconnect();
-            nativeCtx.close();
-          }
-        }, 500);
-      } catch (e) {
-        console.warn('[Voice][DIAG] Native rate test failed:', e);
-      }
-      // --- END DIAGNOSTIC ---
-
       await captureCtx.audioWorklet.addModule('/worklets/capture-processor.js');
       const source = captureCtx.createMediaStreamSource(micStream);
       const captureNode = new AudioWorkletNode(captureCtx, 'capture-processor');
 
-      let audioChunkCount = 0;
       captureNode.port.onmessage = (e) => {
         if (e.data.pcm && sessionRef.current) {
-          audioChunkCount++;
-
-          // Diagnostic: check amplitude of first 10 chunks and every 100th
-          if (audioChunkCount <= 10 || audioChunkCount % 100 === 0) {
-            const view = new Int16Array(e.data.pcm);
-            let maxAmp = 0;
-            let sumSq = 0;
-            for (let i = 0; i < view.length; i++) {
-              const abs = Math.abs(view[i]);
-              if (abs > maxAmp) maxAmp = abs;
-              sumSq += view[i] * view[i];
-            }
-            const rms = Math.sqrt(sumSq / view.length);
-            console.log(`[Voice] Chunk #${audioChunkCount}: size=${e.data.pcm.byteLength}B, samples=${view.length}, maxAmp=${maxAmp}, rms=${rms.toFixed(1)}, first5=[${view[0]},${view[1]},${view[2]},${view[3]},${view[4]}]`);
-          }
-
           const base64 = pcmToBase64(e.data.pcm);
-
-          // Log first base64 chunk preview
-          if (audioChunkCount === 1) {
-            console.log('[Voice] First base64 chunk preview (first 60 chars):', base64.substring(0, 60));
-          }
-
           sessionRef.current.sendRealtimeInput({
             audio: { data: base64, mimeType: 'audio/pcm;rate=16000' },
           });
