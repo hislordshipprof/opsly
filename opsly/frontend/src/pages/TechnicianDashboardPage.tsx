@@ -263,23 +263,25 @@ export default function TechnicianDashboardPage() {
               remaining={remaining}
             />
 
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold">Today's Queue</h2>
-              <span className="text-[10px] font-bold text-muted-foreground px-2 py-1 rounded bg-muted/50 uppercase tracking-wider">
-                {completed}/{stops.length} Complete
-              </span>
-            </div>
+            <div className="glass-card p-5 flex-1 flex flex-col">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-bold">Today's Queue</h2>
+                <span className="text-[10px] font-bold text-muted-foreground px-2 py-1 rounded bg-muted/50 uppercase tracking-wider">
+                  {completed}/{stops.length} Complete
+                </span>
+              </div>
 
-            <div className="space-y-3 overflow-y-auto flex-1 pb-4" style={{ maxHeight: 'calc(100vh - 520px)' }}>
-              {stops.map((stop, i) => (
-                <SidebarJobCard
-                  key={stop.id}
-                  stop={stop}
-                  isActive={activeStopId === stop.id}
-                  isRecommended={i === 0 && stop.id === recommendedStop?.id}
-                  onClick={() => setActiveStopId(stop.id)}
-                />
-              ))}
+              <div className="space-y-3 overflow-y-auto flex-1" style={{ maxHeight: 'calc(100vh - 520px)' }}>
+                {stops.map((stop, i) => (
+                  <SidebarJobCard
+                    key={stop.id}
+                    stop={stop}
+                    isActive={activeStopId === stop.id}
+                    isRecommended={i === 0 && stop.id === recommendedStop?.id}
+                    onClick={() => setActiveStopId(stop.id)}
+                  />
+                ))}
+              </div>
             </div>
           </aside>
         )}
@@ -297,15 +299,17 @@ export default function TechnicianDashboardPage() {
 
         {/* All jobs completed — or no schedule at all */}
         {!isLoading && ((stops.length === 0) || (stops.length > 0 && remaining === 0 && !activeStop)) && (
-          <div className="flex-1 flex flex-col items-center justify-center py-20 text-center">
-            <div className="size-20 rounded-full bg-opsly-low/10 flex items-center justify-center mb-4">
-              <span className="text-3xl text-opsly-low">&#10003;</span>
+          <section className="flex-1 flex items-center justify-center">
+            <div className="glass-card p-12 flex flex-col items-center text-center max-w-md">
+              <div className="size-20 rounded-full bg-opsly-low/10 flex items-center justify-center mb-4">
+                <span className="text-3xl text-opsly-low">&#10003;</span>
+              </div>
+              <p className="text-lg font-bold">All clear for today</p>
+              <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+                No jobs scheduled. Use the voice widget to check for updates.
+              </p>
             </div>
-            <p className="text-lg font-bold">All clear for today</p>
-            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-              No jobs scheduled. Use the voice widget to check for updates.
-            </p>
-          </div>
+          </section>
         )}
       </main>
 

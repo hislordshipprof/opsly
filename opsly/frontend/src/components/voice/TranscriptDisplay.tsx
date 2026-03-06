@@ -25,14 +25,14 @@ export default function TranscriptDisplay({ entries }: TranscriptDisplayProps) {
 
   if (entries.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+      <div className="flex min-h-[80px] items-center justify-center text-sm text-muted-foreground">
         <p>Conversation will appear here...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+    <div className="flex min-h-[120px] max-h-[350px] flex-col gap-3 overflow-y-auto p-4">
       {entries.map((entry, i) => (
         <div
           key={i}

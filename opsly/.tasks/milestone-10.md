@@ -9,14 +9,31 @@ Status: IN_PROGRESS
 - [x] Fix: Markdown renders as raw text in voice widget (TranscriptDisplay.tsx) — DONE (completed: 2026-03-05)
 - [x] Fix: Sidebar job card click (technician) — NO CODE CHANGE NEEDED, Playwright artifact (verified: 2026-03-05)
 
-### Demo Polish
-- [ ] End-to-end demo run: Act 1 (tenant voice + photo) works cleanly
-- [ ] End-to-end demo run: Act 2 (manager dashboard + escalation) works cleanly
-- [ ] End-to-end demo run: Act 3 (technician voice + status update) works cleanly
-- [ ] Seed data tuned for demo (right states, right timing, right names)
-- [ ] Loading states on all async actions (skeletons, spinners)
-- [ ] Error states handled gracefully (no white screens)
-- [ ] Mobile-responsive check on tenant portal (tenants may be on phone)
+### PRD Compliance Fixes (18 issues found, 16 fixed + 1 not a bug)
+- [x] C1: WO detail panel on manager row click — DONE (WorkOrderDetailPanel.tsx)
+- [x] C2: Assign Technician dialog broken import — DONE (dialog.tsx radix-ui fix)
+- [x] C3: Photo upload in voice widget — DONE (camera button + upload + assessment)
+- [x] H1: Sign out on manager + technician dashboards — DONE
+- [x] H2: WebSocket CORS + error handling — DONE (gateway origin: true)
+- [x] H3: KPI Overview section on manager — DONE (KpiOverview.tsx)
+- [x] H4: Tenant orders page + navigation — DONE (TenantOrdersPage.tsx)
+- [x] H5: AI severity score in table + detail — DONE (AiScoreBadge.tsx)
+- [x] M2: Seed data timing for demo story — DONE (relative timestamps)
+- [x] M3: WO numbers WO-2840+ — DONE (matches PRD demo script)
+- [x] M4: Footer year 2024 → 2026 — DONE
+- [x] M5: Dual empty state on technician — DONE (remaining > 0 guard)
+- [x] M6: Connection status "Offline" → "Ready" — DONE (ConnectionBadge.tsx)
+- [x] L1: Technician sidebar spacing — DONE (span wrap)
+- [x] L2: Login Enter key — NOT A BUG (Playwright artifact, form already correct)
+- [x] M1: VoiceWidget sub-components (AudioVisualizer, AgentStatusBadge, ActionConfirmation) — DONE (completed: 2026-03-05)
+- [x] L3: Filter loading states — DONE (completed: 2026-03-05)
+- [x] L4: Mobile responsiveness (manager only) — DONE (completed: 2026-03-05)
+
+### Demo Verification (Playwright E2E)
+- [x] End-to-end demo run: Act 1 (tenant chat + WO creation) — VERIFIED (2026-03-05)
+- [x] End-to-end demo run: Act 2 (manager dashboard + assign + escalation) — VERIFIED (2026-03-05)
+- [x] End-to-end demo run: Act 3 (technician status progression + voice) — VERIFIED (2026-03-05)
+- [x] Seed data tuned for demo (right states, right timing, right names) — DONE
 
 ### Deploy
 - [ ] Production env vars configured on Cloud Run
@@ -26,7 +43,9 @@ Status: IN_PROGRESS
 - [ ] Final review: all hackathon requirements checklist (PRD Section 12)
 
 ## Notes
-- Bug fixes identified via Playwright MCP testing of tenant + technician flows
-- All 3 code fixes applied, frontend builds clean — awaiting commit
+- 18 PRD compliance issues identified via full Playwright E2E testing against PRD Sections 5, 11, 12, 13
+- 16 fixed + 1 confirmed not a bug = 17/18 resolved
+- Only 3 polish items remain (M1, L3, L4) — none block the demo
+- Full issue tracker: ISSUES.md
 
 ## Blockers

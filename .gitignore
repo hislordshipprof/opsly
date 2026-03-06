@@ -59,3 +59,12 @@ opsly/.superdesign/
 opsly/.agents/
 opsly/superdesign-reference.html
 opsly/skills-lock.json
+
+# Playwright MCP artifacts
+.playwright-mcp/
+*.png
+
+# Misc artifacts
+opsly/backend/backend.log
+esc.json
+nul

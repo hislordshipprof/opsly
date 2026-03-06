@@ -11,9 +11,9 @@
 |----------|-------|-------|
 | CRITICAL (blocks demo) | 3 | 3 FIXED |
 | HIGH (degrades demo) | 5 | 5 FIXED |
-| MEDIUM (noticeable gap) | 6 | 6 FIXED |
-| LOW (polish) | 4 | 3 FIXED (1 not a bug) |
-| **Total** | **18** | **16 FIXED + 1 NOT A BUG** |
+| MEDIUM (noticeable gap) | 6 | 6 FIXED + 1 FIXED (M1) |
+| LOW (polish) | 4 | 4 FIXED (1 not a bug) |
+| **Total** | **18** | **18/18 RESOLVED (17 FIXED + 1 NOT A BUG)** |
 
 ---
 
@@ -62,14 +62,10 @@
 
 ## MEDIUM — Noticeable Gaps
 
-### M1: VoiceWidget missing PRD-specified sub-components
+### M1: VoiceWidget missing PRD-specified sub-components -- FIXED
 - **PRD ref:** Section 11 VoiceWidget spec
-- **Actual missing components:**
-  - `AudioVisualizer` — no waveform shown while speaking
-  - `AgentStatusBadge` — no indicator of which agent is active (Triage / Status / Schedule)
-  - `ActionConfirmation` — no preview of what action the agent is about to take before executing
-- **Impact:** Voice widget feels basic compared to PRD spec. Judges may notice missing visual polish.
-- **File:** `frontend/src/components/voice/VoiceWidget.tsx`
+- **Status:** FIXED (2026-03-05)
+- **Resolution:** Created 3 sub-components: `AudioVisualizer.tsx` (5-bar animated waveform, color-coded by speaker), `AgentStatusBadge.tsx` (color-coded pill showing active agent: Triage/Status/Schedule/Maintenance/Escalation), `ActionConfirmation.tsx` (slide-in card showing tool action in progress). Added `animate-voice-bar` keyframe to index.css. Integrated all into VoiceWidget.tsx with `pendingAction` state tracking.
 
 ### M2: Seed data — all SLAs breached, no "fresh" demo scenario -- FIXED
 - **Status:** FIXED (2026-03-05)
@@ -99,14 +95,15 @@
 - **Status:** NOT A BUG (2026-03-05)
 - **Resolution:** Investigation confirmed LoginPage already has proper `<form onSubmit>`, `type="submit"` button, and `e.preventDefault()`. The Enter-key issue was a Playwright MCP click interception artifact, not a real browser bug.
 
-### L3: No loading/error states on filter dropdowns
-- **Actual:** Filter dropdowns (Properties, Statuses, Priorities, Technicians) have no loading state while data fetches.
-- **File:** `frontend/src/pages/ManagerDashboardPage.tsx`
+### L3: No loading/error states on filter dropdowns -- FIXED
+- **Status:** FIXED (2026-03-05)
+- **Resolution:** Added `isLoading` destructuring from useQuery for properties and technicians queries. Dropdown content now shows animated "Loading..." while fetching and "No properties"/"No technicians" empty states.
+- **File:** `frontend/src/components/dashboard/FilterBar.tsx`
 
-### L4: Manager dashboard has no mobile responsiveness
-- **PRD ref:** Section 10, M10 tasks — "Mobile-responsive check on tenant portal"
-- **Actual:** Table layout breaks on narrow viewports. Escalation sidebar overlaps.
-- **Impact:** Low — PRD only requires mobile for tenant portal, not manager dashboard.
+### L4: Manager dashboard has no mobile responsiveness -- FIXED
+- **Status:** FIXED (2026-03-05)
+- **Resolution:** WorkOrderTable wrapped in `overflow-x-auto` for horizontal scroll on mobile. WorkOrderDetailPanel changed from fixed `w-[480px]` to `w-full sm:w-[480px]`. KpiOverview strip gets `overflow-x-auto` with `min-w-[500px]` inner for scroll. Main content padding tightened on mobile (`px-4 sm:px-6`).
+- **Files:** `WorkOrderTable.tsx`, `WorkOrderDetailPanel.tsx`, `KpiOverview.tsx`, `ManagerDashboardPage.tsx`
 
 ---
 
@@ -150,9 +147,13 @@
 | M3: WO numbers WO-2840+ | FIXED |
 | L2: Login Enter key | NOT A BUG (Playwright artifact) |
 
-### Remaining (unfixed — polish only)
-| Issue | Severity | Notes |
-|-------|----------|-------|
-| M1: VoiceWidget sub-components | MEDIUM | AudioVisualizer, AgentStatusBadge, ActionConfirmation |
-| L3: Filter loading states | LOW | Polish |
-| L4: Mobile responsiveness | LOW | Manager dashboard only |
+### Batch 5 — Final polish (M1, All Clear, L3, L4)
+| Fix | Status |
+|-----|--------|
+| M1: VoiceWidget sub-components (AudioVisualizer, AgentStatusBadge, ActionConfirmation) | FIXED |
+| Technician "All clear" not rendering after all jobs done | FIXED |
+| L3: Filter dropdown loading/empty states | FIXED |
+| L4: Manager dashboard mobile responsiveness | FIXED |
+
+### ALL ISSUES RESOLVED
+No remaining unfixed issues. 17 fixed + 1 confirmed not a bug = 18/18 resolved.
