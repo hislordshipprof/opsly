@@ -98,9 +98,10 @@ export function useDashboardEvents() {
 
     const unsubscribers = events.map((event) =>
       subscribe(event, () => {
-        // Invalidate work order list + metrics on any work order event
+        // Invalidate work order list + metrics + schedules on any work order event
         if (event.startsWith('workorder.')) {
           queryClient.invalidateQueries({ queryKey: ['work-orders'] });
+          queryClient.invalidateQueries({ queryKey: ['schedules'] });
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.metrics() });
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.technicians() });
         }

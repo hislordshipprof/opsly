@@ -114,7 +114,7 @@ async function main() {
       category: IssueCategory.PLUMBING,
       description: 'Kitchen sink is leaking under the cabinet, water pooling on floor',
       status: WorkOrderStatus.REPORTED, priority: Priority.HIGH,
-      slaDeadline: hoursFromNow(5), createdAt: hoursAgo(1), // 5h left, created 1h ago
+      slaDeadline: hoursFromNow(0.25), createdAt: hoursAgo(3.75), // 15min left — about to breach
       aiSeverityScore: 0.87,
     },
     {
@@ -122,7 +122,7 @@ async function main() {
       category: IssueCategory.ELECTRICAL,
       description: 'Living room ceiling light flickers constantly and makes buzzing noise',
       status: WorkOrderStatus.REPORTED, priority: Priority.MEDIUM,
-      slaDeadline: hoursFromNow(22), createdAt: minsAgo(45), // 22h left, fresh report
+      slaDeadline: hoursFromNow(48), createdAt: minsAgo(45), // 2 days left — comfortable
       aiSeverityScore: 0.68,
     },
     {
@@ -130,7 +130,7 @@ async function main() {
       category: IssueCategory.APPLIANCE,
       description: 'Refrigerator making unusual grinding noise, food not staying cold enough',
       status: WorkOrderStatus.REPORTED, priority: Priority.HIGH,
-      slaDeadline: hoursFromNow(4), createdAt: minsAgo(30), // 4h left, just reported
+      slaDeadline: hoursFromNow(0.75), createdAt: hoursAgo(3.25), // 45min left — critical zone
       aiSeverityScore: 0.82,
     },
 
@@ -140,7 +140,7 @@ async function main() {
       category: IssueCategory.HVAC,
       description: 'Air conditioning unit not cooling, blowing warm air only',
       status: WorkOrderStatus.ASSIGNED, priority: Priority.HIGH,
-      slaDeadline: hoursFromNow(4.5), createdAt: hoursAgo(1.5), // 4.5h left
+      slaDeadline: hoursFromNow(3), createdAt: hoursAgo(1), // 3h left — normal countdown
       aiSeverityScore: 0.79,
     },
     {
@@ -148,7 +148,7 @@ async function main() {
       category: IssueCategory.APPLIANCE,
       description: 'Dishwasher not draining properly after wash cycle completes',
       status: WorkOrderStatus.ASSIGNED, priority: Priority.MEDIUM,
-      slaDeadline: hoursFromNow(20), createdAt: hoursAgo(4), // 20h left
+      slaDeadline: hoursFromNow(18), createdAt: hoursAgo(6), // 18h left — day-scale
       aiSeverityScore: 0.63,
     },
 
@@ -158,7 +158,7 @@ async function main() {
       category: IssueCategory.LOCKSMITH,
       description: 'Front door lock mechanism is jammed, key turns but door does not open',
       status: WorkOrderStatus.IN_PROGRESS, priority: Priority.URGENT,
-      slaDeadline: hoursFromNow(0.5), createdAt: hoursAgo(1.5), // 30min left, urgent
+      slaDeadline: hoursFromNow(0.13), createdAt: hoursAgo(1.87), // ~8min left — imminently breaching
       aiSeverityScore: 0.94,
     },
     {
@@ -166,7 +166,7 @@ async function main() {
       category: IssueCategory.STRUCTURAL,
       description: 'Crack appearing along bedroom wall near the window frame',
       status: WorkOrderStatus.IN_PROGRESS, priority: Priority.LOW,
-      slaDeadline: hoursFromNow(60), createdAt: hoursAgo(12), // 60h left (low priority)
+      slaDeadline: hoursFromNow(60), createdAt: hoursAgo(12), // 2.5 days left — long runway
       aiSeverityScore: 0.45,
     },
 

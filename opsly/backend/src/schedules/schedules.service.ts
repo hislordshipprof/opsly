@@ -1,59 +1,102 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { OpslyGateway } from '../websocket/opsly.gateway.js';
-import { StopStatus, WorkOrderStatus } from '@prisma/client';
+import { ScheduleStatus, StopStatus, WorkOrderStatus } from '@prisma/client';
+
+/** Shared include for schedule queries — keeps both paths consistent */
+const SCHEDULE_INCLUDE = {
+  stops: {
+    orderBy: { sequenceNumber: 'asc' as const },
+    include: {
+      workOrder: {
+        select: {
+          id: true,
+          orderNumber: true,
+          issueCategory: true,
+          issueDescription: true,
+          priority: true,
+          status: true,
+          aiSeverityScore: true,
+          visionAssessment: true,
+          photoUrls: true,
+          slaDeadline: true,
+          slaBreached: true,
+          resolutionNotes: true,
+          unit: {
+            select: {
+              unitNumber: true,
+              floor: true,
+              property: { select: { name: true, address: true } },
+            },
+          },
+          reportedBy: { select: { name: true, email: true } },
+        },
+      },
+    },
+  },
+};
 
 @Injectable()
 export class SchedulesService {
+  private readonly logger = new Logger(SchedulesService.name);
+
   constructor(
     private prisma: PrismaService,
     private gateway: OpslyGateway,
   ) {}
 
-  /** Get today's schedule for a technician (with stops + work order details) */
+  /** Get today's schedule for a technician (with stops + work order details).
+   *  Auto-generates a schedule from assigned work orders if none exists for today. */
   async getTechnicianSchedule(technicianId: string, date?: string) {
     const targetDate = date ? new Date(date) : new Date();
-    // Use UTC boundaries to avoid timezone mismatch with stored dates
     const dayStart = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0, 0));
     const dayEnd = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999));
 
-    return this.prisma.technicianSchedule.findFirst({
+    // 1. Look for an existing schedule for today
+    const existing = await this.prisma.technicianSchedule.findFirst({
       where: {
         technicianId,
         date: { gte: dayStart, lte: dayEnd },
       },
-      include: {
+      include: SCHEDULE_INCLUDE,
+    });
+
+    if (existing) return existing;
+
+    // 2. No schedule for today — auto-generate from assigned work orders
+    const assignedOrders = await this.prisma.workOrder.findMany({
+      where: {
+        assignedToId: technicianId,
+        status: { notIn: [WorkOrderStatus.COMPLETED, WorkOrderStatus.CANCELLED] },
+      },
+      orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
+    });
+
+    if (assignedOrders.length === 0) return null;
+
+    this.logger.log(`Auto-generating schedule for technician ${technicianId} with ${assignedOrders.length} stops`);
+
+    const dateStr = targetDate.toISOString().slice(0, 10).replace(/-/g, '');
+    const schedule = await this.prisma.technicianSchedule.create({
+      data: {
+        scheduleCode: `SCH-${dateStr}-AUTO`,
+        date: dayStart,
+        technicianId,
+        region: 'Auto-generated',
+        status: ScheduleStatus.ACTIVE,
         stops: {
-          orderBy: { sequenceNumber: 'asc' },
-          include: {
-            workOrder: {
-              select: {
-                id: true,
-                orderNumber: true,
-                issueCategory: true,
-                issueDescription: true,
-                priority: true,
-                status: true,
-                aiSeverityScore: true,
-                visionAssessment: true,
-                photoUrls: true,
-                slaDeadline: true,
-                slaBreached: true,
-                resolutionNotes: true,
-                unit: {
-                  select: {
-                    unitNumber: true,
-                    floor: true,
-                    property: { select: { name: true, address: true } },
-                  },
-                },
-                reportedBy: { select: { name: true, email: true } },
-              },
-            },
-          },
+          create: assignedOrders.map((wo, i) => ({
+            sequenceNumber: i + 1,
+            workOrderId: wo.id,
+            status: wo.status === WorkOrderStatus.IN_PROGRESS ? StopStatus.ARRIVED : StopStatus.PENDING,
+            plannedEta: new Date(dayStart.getTime() + (i + 1) * 3600000),
+          })),
         },
       },
+      include: SCHEDULE_INCLUDE,
     });
+
+    return schedule;
   }
 
   /** Update a schedule stop's status + sync work order status */

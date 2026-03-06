@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { getWorkOrder, getWorkOrderEvents } from '@/services/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getWorkOrder, getWorkOrderEvents, updateWorkOrderStatus, getActiveEscalations, acknowledgeEscalation } from '@/services/api';
 import { QUERY_KEYS } from '@/services/query-keys';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { useWorkOrderEvents } from '@/hooks/useWebSocket';
@@ -9,6 +9,8 @@ import { SlaCountdown } from './SlaCountdown';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WorkOrderStatus } from '@/types';
 import type { WorkOrderDetail as WorkOrderDetailType, WorkOrderEvent } from '@/types';
 
 function formatDate(dateStr: string): string {
@@ -97,8 +99,32 @@ function DetailSkeleton() {
   );
 }
 
+// Valid next statuses a manager can move a work order to
+const STATUS_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> = {
+  REPORTED: ['TRIAGED', 'ASSIGNED', 'CANCELLED'],
+  TRIAGED: ['ASSIGNED', 'CANCELLED'],
+  ASSIGNED: ['IN_PROGRESS', 'CANCELLED'],
+  EN_ROUTE: ['IN_PROGRESS'],
+  IN_PROGRESS: ['NEEDS_PARTS', 'COMPLETED'],
+  NEEDS_PARTS: ['IN_PROGRESS', 'COMPLETED'],
+  ESCALATED: ['ASSIGNED', 'IN_PROGRESS', 'CANCELLED'],
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  REPORTED: 'Reported',
+  TRIAGED: 'Triaged',
+  ASSIGNED: 'Assigned',
+  EN_ROUTE: 'En Route',
+  IN_PROGRESS: 'In Progress',
+  NEEDS_PARTS: 'Needs Parts',
+  COMPLETED: 'Completed',
+  ESCALATED: 'Escalated',
+  CANCELLED: 'Cancelled',
+};
+
 export function WorkOrderDetailPanel() {
   const { selectedWorkOrderId, selectWorkOrder, openAssignModal } = useDashboardStore();
+  const queryClient = useQueryClient();
 
   const { data: workOrder, isLoading } = useQuery<WorkOrderDetailType>({
     queryKey: QUERY_KEYS.workOrder(selectedWorkOrderId ?? ''),
@@ -112,8 +138,47 @@ export function WorkOrderDetailPanel() {
     enabled: !!selectedWorkOrderId,
   });
 
+  // Fetch escalations to find matching escalation for this work order
+  const { data: escalations } = useQuery<Array<{ id: string; workOrder: { id: string } }>>({
+    queryKey: ['escalations'],
+    queryFn: getActiveEscalations,
+    enabled: !!workOrder && workOrder.status === 'ESCALATED',
+  });
+
+  const matchingEscalation = escalations?.find(
+    (e) => e.workOrder.id === selectedWorkOrderId,
+  );
+
+  const statusMutation = useMutation({
+    mutationFn: (newStatus: string) =>
+      updateWorkOrderStatus(selectedWorkOrderId!, newStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workOrder(selectedWorkOrderId!) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workOrderEvents(selectedWorkOrderId!) });
+      queryClient.invalidateQueries({ queryKey: ['work-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['escalations'] });
+    },
+  });
+
+  const ackMutation = useMutation({
+    mutationFn: () => acknowledgeEscalation(matchingEscalation!.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['escalations'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workOrder(selectedWorkOrderId!) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workOrderEvents(selectedWorkOrderId!) });
+      queryClient.invalidateQueries({ queryKey: ['work-orders'] });
+    },
+  });
+
   // Subscribe to real-time updates for this work order
   useWorkOrderEvents(selectedWorkOrderId);
+
+  const nextStatuses = workOrder
+    ? STATUS_TRANSITIONS[workOrder.status as WorkOrderStatus] ?? []
+    : [];
+  const isTerminal = workOrder
+    ? workOrder.status === 'COMPLETED' || workOrder.status === 'CANCELLED'
+    : true;
 
   if (!selectedWorkOrderId) {
     return null;
@@ -166,7 +231,7 @@ export function WorkOrderDetailPanel() {
           </div>
 
           {/* Scrollable content */}
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 min-h-0">
             {isLoading || !workOrder ? (
               <div className="p-6">
                 <DetailSkeleton />
@@ -401,6 +466,56 @@ export function WorkOrderDetailPanel() {
               </div>
             )}
           </ScrollArea>
+
+          {/* Action Bar — only for non-terminal statuses */}
+          {workOrder && !isTerminal && (
+            <div className="border-t border-border/50 p-4 shrink-0 bg-background/80 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                {/* Status Change Dropdown */}
+                {nextStatuses.length > 0 && (
+                  <Select
+                    onValueChange={(value) => statusMutation.mutate(value)}
+                    disabled={statusMutation.isPending}
+                  >
+                    <SelectTrigger className="w-[160px] rounded-xl h-9 text-sm">
+                      <SelectValue placeholder="Change Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {nextStatuses.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {STATUS_LABELS[s] ?? s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                <div className="flex-1" />
+
+                {/* Reassign Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => openAssignModal(workOrder.id)}
+                >
+                  Reassign
+                </Button>
+
+                {/* Acknowledge Escalation — only for ESCALATED orders */}
+                {workOrder.status === 'ESCALATED' && matchingEscalation && (
+                  <Button
+                    size="sm"
+                    className="rounded-xl bg-opsly-urgent hover:bg-opsly-urgent/90 text-white"
+                    onClick={() => ackMutation.mutate()}
+                    disabled={ackMutation.isPending}
+                  >
+                    {ackMutation.isPending ? 'Acknowledging...' : 'Acknowledge'}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

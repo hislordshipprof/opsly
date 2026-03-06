@@ -136,7 +136,7 @@ export class OpslyGateway
     this.emitToRoom('ops:all', 'workorder.created', workOrder);
   }
 
-  /** Status changed → managers + tenant who reported it */
+  /** Status changed → managers + tenant + assigned technician */
   emitWorkOrderStatusChanged(
     workOrder: Record<string, unknown>,
     tenantUserId: string,
@@ -147,6 +147,15 @@ export class OpslyGateway
       'workorder.status_changed',
       workOrder,
     );
+    // Also notify the assigned technician so their schedule view refreshes
+    const techId = workOrder.assignedToId as string | undefined;
+    if (techId) {
+      this.emitToRoom(
+        `technician:${techId}`,
+        'workorder.status_changed',
+        workOrder,
+      );
+    }
   }
 
   /** Technician assigned → managers + tenant + technician */
@@ -193,7 +202,7 @@ export class OpslyGateway
     this.emitToRoom('metrics:overview', 'metrics.snapshot_updated', metrics);
   }
 
-  /** Work order completed → managers + tenant */
+  /** Work order completed → managers + tenant + technician */
   emitWorkOrderCompleted(
     workOrder: Record<string, unknown>,
     tenantUserId: string,
@@ -204,6 +213,14 @@ export class OpslyGateway
       'workorder.completed',
       workOrder,
     );
+    const techId = workOrder.assignedToId as string | undefined;
+    if (techId) {
+      this.emitToRoom(
+        `technician:${techId}`,
+        'workorder.completed',
+        workOrder,
+      );
+    }
   }
 
   /** ETA updated → managers + tenant */

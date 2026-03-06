@@ -5,9 +5,10 @@ import { ChatService } from './chat.service.js';
 import { VoiceService } from './voice.service.js';
 import { AiController } from './ai.controller.js';
 import { WorkOrdersModule } from '../work-orders/work-orders.module.js';
+import { VisionModule } from './vision.module.js';
 
 @Module({
-  imports: [WorkOrdersModule],
+  imports: [WorkOrdersModule, VisionModule],
   controllers: [AiController],
   providers: [
     OpslyToolsService,

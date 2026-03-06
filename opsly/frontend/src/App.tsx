@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { Role } from '@/types';
+import LandingPage from '@/pages/landing/LandingPage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import TenantReportPage from '@/pages/TenantReportPage';
@@ -53,6 +54,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/dashboard" element={<RoleRedirect />} />
 
             {/* Manager dashboard */}
             <Route
@@ -91,6 +93,9 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Landing page — public */}
+            <Route path="/" element={<LandingPage />} />
 
             {/* Default: role-based redirect */}
             <Route path="*" element={<RoleRedirect />} />

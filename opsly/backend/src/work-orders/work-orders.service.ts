@@ -197,6 +197,23 @@ export class WorkOrdersService {
       },
     });
 
+    // Sync the matching schedule stop so the technician view reflects the change
+    const woStatusToStopStatus: Partial<Record<string, string>> = {
+      EN_ROUTE: 'EN_ROUTE',
+      IN_PROGRESS: 'ARRIVED',
+      COMPLETED: 'COMPLETED',
+    };
+    const stopStatus = woStatusToStopStatus[dto.status];
+    if (stopStatus) {
+      await this.prisma.scheduleStop.updateMany({
+        where: { workOrderId: id },
+        data: {
+          status: stopStatus as any,
+          ...(stopStatus === 'ARRIVED' && { actualArrival: new Date() }),
+        },
+      });
+    }
+
     this.logger.log(
       `Work order ${workOrder.orderNumber} status: ${workOrder.status} → ${dto.status}`,
     );
@@ -303,7 +320,7 @@ export class WorkOrdersService {
     const slaDeadline = computeSlaDeadline(priority);
 
     // Store base64 as data URI for demo (production would use Cloud Storage)
-    const photoUrl = `data:${mimeType};base64,${imageBase64.substring(0, 50)}...`;
+    const photoUrl = `data:${mimeType};base64,${imageBase64}`;
 
     const updated = await this.prisma.workOrder.update({
       where: { id },

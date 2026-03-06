@@ -34,12 +34,12 @@ export default function ConnectionBadge({ state, agentName, isSending }: Connect
 
   return (
     <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5">
+      <div className="flex items-center gap-2 rounded-full border border-border bg-card/60 backdrop-blur-sm px-3 py-1.5">
         <span className={`h-2 w-2 rounded-full ${dotColor}`} />
         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{statusText}</span>
       </div>
       {state !== 'IDLE' && state !== 'ERROR' && (
-        <div className="rounded-full border border-border bg-card px-3 py-1.5">
+        <div className="rounded-full border border-border bg-card/60 backdrop-blur-sm px-3 py-1.5">
           <span className="text-xs font-medium text-primary">{agentName}</span>
         </div>
       )}

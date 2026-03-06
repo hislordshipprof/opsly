@@ -43,16 +43,16 @@ export default function MicButton({ state, onStart, onStop }: MicButtonProps) {
       onClick={handleClick}
       disabled={isDisabled}
       aria-label={STATE_LABELS[state]}
-      className={`flex h-16 w-16 items-center justify-center rounded-full text-white transition-all disabled:opacity-70 ${STATE_STYLES[state]}`}
+      className={`flex size-9 items-center justify-center rounded-full text-white transition-all shrink-0 disabled:opacity-70 ${STATE_STYLES[state]}`}
     >
       {isActive ? (
         /* Stop icon */
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
           <rect x="6" y="6" width="12" height="12" rx="1" />
         </svg>
       ) : (
         /* Mic icon */
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
           <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4Z" />
           <path d="M6 11a1 1 0 1 0-2 0 8 8 0 0 0 7 7.93V21H8a1 1 0 1 0 0 2h8a1 1 0 1 0 0-2h-3v-2.07A8 8 0 0 0 20 11a1 1 0 1 0-2 0 6 6 0 0 1-12 0Z" />
         </svg>

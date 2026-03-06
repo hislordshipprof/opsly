@@ -75,6 +75,7 @@ export async function createWorkOrder(body: {
   unitId: string;
   issueCategory: string;
   issueDescription: string;
+  priority?: string;
 }) {
   const { data } = await api.post('/work-orders', body);
   return data;
@@ -206,6 +207,29 @@ export async function uploadPhoto(
   });
 
   const { data } = await api.post<PhotoAssessmentResult>(`/work-orders/${workOrderId}/photos`, {
+    imageBase64: base64,
+    mimeType: file.type,
+  });
+
+  return data;
+}
+
+/** Standalone photo assessment — no work order needed */
+export async function assessPhotoStandalone(
+  file: File,
+): Promise<{ assessment: PhotoAssessmentResult['visionAssessment'] }> {
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64Data = result.split(',')[1];
+      resolve(base64Data);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const { data } = await api.post('/ai/assess-photo', {
     imageBase64: base64,
     mimeType: file.type,
   });

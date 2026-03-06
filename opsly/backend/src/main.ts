@@ -1,10 +1,14 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
+import { json } from 'express';
 import { AppModule } from './app.module.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Allow large payloads for base64 photo uploads (up to 6MB)
+  app.use(json({ limit: '6mb' }));
 
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',

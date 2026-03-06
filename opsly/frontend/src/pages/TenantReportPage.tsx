@@ -42,7 +42,7 @@ export default function TenantReportPage() {
       </header>
 
       <section className="flex flex-1 items-center justify-center p-6">
-        <div className="h-[600px] w-full max-w-lg">
+        <div className="h-[600px] w-full max-w-lg glass-card-heavy overflow-hidden shadow-2xl">
           <VoiceWidget />
         </div>
       </section>

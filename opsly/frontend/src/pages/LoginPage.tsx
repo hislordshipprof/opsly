@@ -17,7 +17,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/');
+      navigate('/dashboard');
     } catch {
       setError('Invalid email or password. Please try again.');
     } finally {
@@ -83,13 +83,16 @@ export default function LoginPage() {
         }
       `}</style>
 
-      {/* Left — Brand gradient panel (lighter blue) */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-[#3b82f6] to-[#60a5fa] flex-col justify-between p-12">
-        {/* Animated floating circles */}
-        <div className="absolute top-[12%] left-[8%] size-72 rounded-full bg-white/[0.07] blur-3xl animate-float-slow" />
-        <div className="absolute bottom-[15%] right-[3%] size-96 rounded-full bg-sky-300/[0.08] blur-3xl animate-float-medium" />
-        <div className="absolute top-[55%] left-[35%] size-48 rounded-full bg-white/[0.06] blur-2xl animate-float-fast" />
-        <div className="absolute top-[30%] right-[20%] size-32 rounded-full bg-blue-200/[0.08] blur-2xl animate-float-medium" style={{ animationDelay: '2s' }} />
+      {/* Left — Hero image panel */}
+      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden flex-col justify-between p-12">
+        {/* Background image */}
+        <img
+          src="/hero-apartment.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/20" />
 
         {/* Brand content — slide-in animations */}
         <div className="relative z-10 animate-slide-right">
@@ -97,21 +100,21 @@ export default function LoginPage() {
             <div className="size-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
               <span className="text-white font-bold text-lg">O</span>
             </div>
-            <span className="text-white font-bold text-2xl tracking-tight">OPSLY</span>
+            <span className="text-white font-bold text-2xl tracking-tight drop-shadow-lg">OPSLY</span>
           </div>
         </div>
 
         <div className="relative z-10 space-y-4 animate-slide-right" style={{ animationDelay: '0.2s' }}>
-          <h2 className="text-white text-3xl font-bold tracking-tight leading-tight">
+          <h2 className="text-white text-3xl font-bold tracking-tight leading-tight drop-shadow-lg">
             AI-Powered Property<br />Management Platform
           </h2>
-          <p className="text-white/70 text-base max-w-sm leading-relaxed">
+          <p className="text-white/80 text-base max-w-sm leading-relaxed drop-shadow-md">
             Voice-first maintenance reporting, smart work order routing, and real-time operations visibility.
           </p>
         </div>
 
         <div className="relative z-10 animate-slide-right" style={{ animationDelay: '0.4s' }}>
-          <p className="text-white/40 text-xs">
+          <p className="text-white/50 text-xs drop-shadow-md">
             Built with Google Gemini AI
           </p>
         </div>
