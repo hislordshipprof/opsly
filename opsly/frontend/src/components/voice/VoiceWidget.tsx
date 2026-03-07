@@ -228,6 +228,7 @@ export default function VoiceWidget({ userName, onSendReady, recap, onDismissRec
         onSuggestionClick={handleTextSend}
         recap={recap}
         onDismissRecap={onDismissRecap}
+        pendingAction={pendingAction}
       />
 
       {/* Action confirmation — shows what tool the agent is executing */}

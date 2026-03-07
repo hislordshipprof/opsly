@@ -12,14 +12,37 @@ function formatMarkdown(text: string): ReactNode {
   });
 }
 
-/** Bouncing dots indicator */
-function TypingIndicator() {
+/** Contextual status messages for tool calls */
+const AGENT_STATUS_MAP: Record<string, { icon: string; text: string }> = {
+  get_unit_by_tenant: { icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z', text: 'Checking your unit history...' },
+  create_work_order: { icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', text: 'Creating work order...' },
+  get_work_order: { icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z', text: 'Looking up work order...' },
+  get_open_work_orders: { icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', text: 'Checking your open orders...' },
+  get_technician_schedule: { icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', text: 'Looking up technician schedule...' },
+  update_work_order_status: { icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15', text: 'Updating work order status...' },
+};
+
+/** Bouncing dots indicator — shows contextual message when a tool call is active */
+function TypingIndicator({ pendingAction }: { pendingAction?: string | null }) {
+  const status = pendingAction ? AGENT_STATUS_MAP[pendingAction] : null;
+
   return (
     <div className="flex justify-start">
-      <div className="bg-card/60 text-card-foreground border border-border/50 rounded-lg px-4 py-2.5 flex items-center gap-1 backdrop-blur-sm">
-        <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+      <div className="bg-card/60 text-card-foreground border border-border/50 rounded-lg px-4 py-2.5 flex items-center gap-2 backdrop-blur-sm animate-in fade-in duration-300">
+        {status ? (
+          <>
+            <svg className="size-3.5 text-primary shrink-0 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d={status.icon} />
+            </svg>
+            <span className="text-xs text-muted-foreground">{status.text}</span>
+          </>
+        ) : (
+          <>
+            <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+          </>
+        )}
       </div>
     </div>
   );
@@ -90,9 +113,10 @@ interface TranscriptDisplayProps {
   onSuggestionClick?: (text: string) => void;
   recap?: { recap: string; sessionAge: string } | null;
   onDismissRecap?: () => void;
+  pendingAction?: string | null;
 }
 
-export default function TranscriptDisplay({ entries, isThinking, userName, onSuggestionClick, recap, onDismissRecap }: TranscriptDisplayProps) {
+export default function TranscriptDisplay({ entries, isThinking, userName, onSuggestionClick, recap, onDismissRecap, pendingAction }: TranscriptDisplayProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -101,11 +125,17 @@ export default function TranscriptDisplay({ entries, isThinking, userName, onSug
 
   if (entries.length === 0 && !isThinking) {
     const firstName = userName?.split(' ')[0];
+    const hour = new Date().getHours();
+    const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const timeIcon = hour < 12 ? '☀️' : hour < 17 ? '🌤️' : '🌙';
+    const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
     return (
       <div className="flex flex-1 min-h-0 flex-col items-center justify-center gap-6 px-6 text-center">
         <div>
+          <p className="text-xs text-muted-foreground mb-2 font-medium">{timeIcon} {dateStr}</p>
           <h3 className="text-lg font-bold mb-1">
-            {firstName ? `Hi ${firstName}, how can we help?` : 'How can we help?'}
+            {firstName ? `${timeGreeting}, ${firstName}` : timeGreeting}
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px]">
             Describe your issue, upload a photo, or use voice — I'll create a work order and get help on the way.
@@ -172,7 +202,7 @@ export default function TranscriptDisplay({ entries, isThinking, userName, onSug
           </div>
         );
       })}
-      {isThinking && <TypingIndicator />}
+      {isThinking && <TypingIndicator pendingAction={pendingAction} />}
       <div ref={bottomRef} />
     </div>
   );

@@ -7,6 +7,7 @@ import { QUERY_KEYS } from '@/services/query-keys';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { PriorityBadge } from '@/components/dashboard/PriorityBadge';
 import VoiceWidget from '@/components/voice/VoiceWidget';
+import NotificationToasts from '@/components/tenant/NotificationToasts';
 import type { WorkOrderListItem } from '@/types';
 
 /* ── Helpers ────────────────────────────────────────────── */
@@ -56,6 +57,26 @@ function statusDotColor(status: string): string {
   }
 }
 
+/* ── Order timeline steps ─────────────────────────────── */
+
+const STATUS_STEPS = ['REPORTED', 'TRIAGED', 'ASSIGNED', 'EN_ROUTE', 'IN_PROGRESS', 'COMPLETED'] as const;
+
+const STATUS_LABEL: Record<string, string> = {
+  REPORTED: 'Reported', TRIAGED: 'Triaged', ASSIGNED: 'Assigned',
+  EN_ROUTE: 'En Route', IN_PROGRESS: 'In Progress', COMPLETED: 'Completed',
+  ESCALATED: 'Escalated', NEEDS_PARTS: 'Needs Parts', CANCELLED: 'Cancelled',
+};
+
+function getStepState(stepStatus: string, orderStatus: string): 'done' | 'current' | 'future' {
+  const stepIdx = STATUS_STEPS.indexOf(stepStatus as typeof STATUS_STEPS[number]);
+  const orderIdx = STATUS_STEPS.indexOf(orderStatus as typeof STATUS_STEPS[number]);
+  // For non-standard statuses (ESCALATED, etc.), show as current
+  if (orderIdx === -1) return stepStatus === orderStatus ? 'current' : 'future';
+  if (stepIdx < orderIdx) return 'done';
+  if (stepIdx === orderIdx) return 'current';
+  return 'future';
+}
+
 /* ── Quick action definitions ───────────────────────────── */
 
 const QUICK_ACTIONS = [
@@ -98,6 +119,7 @@ export default function TenantReportPage() {
   });
 
   const [recapDismissed, setRecapDismissed] = useState(false);
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const activeRecap = !recapDismissed && recapData?.recap ? recapData as { recap: string; sessionAge: string } : null;
 
   const activeOrders = orders?.filter(
@@ -112,6 +134,9 @@ export default function TenantReportPage() {
 
   return (
     <main className="flex min-h-screen flex-col">
+      {/* ── Toast notifications from WebSocket events ──── */}
+      <NotificationToasts />
+
       {/* ── Nav ─────────────────────────────────────────── */}
       <header className="glass-nav sticky top-0 z-30 px-6 h-16">
         <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between">
@@ -249,24 +274,82 @@ export default function TenantReportPage() {
               <p className="text-sm text-muted-foreground">No open requests</p>
             </div>
           )}
-          {activeOrders.slice(0, 3).map((order) => (
-            <div
-              key={order.id}
-              className={`glass-card p-4 border-l-[3px] ${priorityBorderClass(order.priority)} hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200`}
-            >
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="font-mono text-xs font-bold">{order.orderNumber}</span>
-                <PriorityBadge priority={order.priority} />
+          {activeOrders.slice(0, 3).map((order) => {
+            const isExpanded = expandedOrderId === order.id;
+            return (
+              <div
+                key={order.id}
+                className={`glass-card border-l-[3px] ${priorityBorderClass(order.priority)} hover:shadow-lg transition-all duration-200`}
+              >
+                <button
+                  onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                  className="w-full text-left p-4"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-mono text-xs font-bold">{order.orderNumber}</span>
+                    <div className="flex items-center gap-2">
+                      <PriorityBadge priority={order.priority} />
+                      <svg
+                        className={`size-3.5 text-muted-foreground transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="text-sm text-secondary-foreground line-clamp-2 mb-2.5 leading-relaxed">
+                    {order.issueDescription}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <StatusBadge status={order.status} />
+                    <span className="text-[10px] text-muted-foreground font-mono">{timeAgo(order.createdAt)}</span>
+                  </div>
+                </button>
+
+                {/* Timeline expansion */}
+                <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="px-4 pb-4 pt-1 border-t border-border/30">
+                    <div className="space-y-0">
+                      {STATUS_STEPS.map((step, idx) => {
+                        const stepState = getStepState(step, order.status);
+                        return (
+                          <div key={step} className="flex items-start gap-3">
+                            <div className="flex flex-col items-center">
+                              <div className={`size-5 rounded-full flex items-center justify-center shrink-0 ${
+                                stepState === 'done' ? 'bg-opsly-low/20' :
+                                stepState === 'current' ? 'bg-primary/20 ring-2 ring-primary/40 animate-pulse' :
+                                'bg-muted/40'
+                              }`}>
+                                {stepState === 'done' ? (
+                                  <svg className="size-3 text-opsly-low" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                ) : stepState === 'current' ? (
+                                  <div className="size-2 rounded-full bg-primary" />
+                                ) : (
+                                  <div className="size-2 rounded-full bg-muted-foreground/30" />
+                                )}
+                              </div>
+                              {idx < STATUS_STEPS.length - 1 && (
+                                <div className={`w-px h-4 ${stepState === 'done' ? 'bg-opsly-low/40' : 'bg-border/50'}`} />
+                              )}
+                            </div>
+                            <span className={`text-xs pt-0.5 ${
+                              stepState === 'current' ? 'font-semibold text-primary' :
+                              stepState === 'done' ? 'text-muted-foreground' :
+                              'text-muted-foreground/50'
+                            }`}>
+                              {STATUS_LABEL[step]}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm text-secondary-foreground line-clamp-2 mb-2.5 leading-relaxed">
-                {order.issueDescription}
-              </p>
-              <div className="flex items-center justify-between">
-                <StatusBadge status={order.status} />
-                <span className="text-[10px] text-muted-foreground font-mono">{timeAgo(order.createdAt)}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Live notifications */}
           {liveUpdates.length > 0 && (
