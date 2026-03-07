@@ -15,6 +15,12 @@ function toastFromEvent(event: string, data: Record<string, unknown>): Omit<Toas
   const orderNum = (data.orderNumber as string) || '';
 
   switch (event) {
+    case 'workorder.created':
+      return {
+        message: `${orderNum} has been submitted — awaiting triage`,
+        accent: 'border-l-primary',
+        icon: 'M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z',
+      };
     case 'workorder.status_changed':
       return {
         message: `${orderNum} status updated to ${String(data.status ?? '').replace(/_/g, ' ')}`,
@@ -26,6 +32,12 @@ function toastFromEvent(event: string, data: Record<string, unknown>): Omit<Toas
         message: `Technician assigned to ${orderNum}`,
         accent: 'border-l-primary',
         icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+      };
+    case 'workorder.photo_assessed':
+      return {
+        message: `Photo assessed for ${orderNum}`,
+        accent: 'border-l-opsly-medium',
+        icon: 'M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z',
       };
     case 'workorder.completed':
       return {
@@ -69,8 +81,10 @@ export default function NotificationToasts() {
     if (!isConnected) return;
 
     const events = [
+      'workorder.created',
       'workorder.status_changed',
       'workorder.technician_assigned',
+      'workorder.photo_assessed',
       'workorder.completed',
       'escalation.triggered',
     ];
