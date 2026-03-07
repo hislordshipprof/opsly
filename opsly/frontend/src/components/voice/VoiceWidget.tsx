@@ -18,9 +18,12 @@ interface VoiceWidgetProps {
   userName?: string;
   /** Parent calls this ref to send a message into the chat from outside */
   onSendReady?: (send: (text: string) => void) => void;
+  /** Session recap from last conversation */
+  recap?: { recap: string; sessionAge: string } | null;
+  onDismissRecap?: () => void;
 }
 
-export default function VoiceWidget({ userName, onSendReady }: VoiceWidgetProps) {
+export default function VoiceWidget({ userName, onSendReady, recap, onDismissRecap }: VoiceWidgetProps) {
   const { user } = useAuth();
   const chatSessionRef = useRef<string | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -109,22 +112,26 @@ export default function VoiceWidget({ userName, onSendReady }: VoiceWidgetProps)
 
       // In text chat, tool calls happen on the backend — the frontend never sees them.
       // Detect when a work order was just created by parsing the response for "WO-XXXX",
-      // then upload the pending photo to that work order.
-      if (pendingPhotoRef.current && !currentWorkOrderId) {
-        const woMatch = res.text.match(/WO-\d+/);
-        if (woMatch) {
-          console.log('[VoiceWidget] Work order detected in response:', woMatch[0], '— uploading pending photo');
+      // then upload the pending photo and fetch AI maintenance tips.
+      const woMatch = res.text.match(/WO-\d+/);
+      if (woMatch) {
+        // Upload pending photo if any
+        if (pendingPhotoRef.current && !currentWorkOrderId) {
           try {
             const wo = await api.getWorkOrderByNumber(woMatch[0]);
             setCurrentWorkOrderId(wo.id);
             await api.uploadPhoto(wo.id, pendingPhotoRef.current);
-            console.log('[VoiceWidget] Photo uploaded to', woMatch[0]);
-          } catch (err) {
-            console.error('[VoiceWidget] Photo upload failed:', err);
+          } catch {
+            // Photo attachment failed — work order still valid
           } finally {
             pendingPhotoRef.current = null;
           }
         }
+
+        // Fetch AI maintenance tips for the reported issue (fire-and-forget)
+        api.getMaintenanceTips('general', text).then((tips) => {
+          if (tips) addTranscript('assistant', tips, { aiTip: true });
+        }).catch(() => {});
       }
     } catch {
       addTranscript('assistant', 'Sorry, something went wrong. Please try again.');
@@ -219,6 +226,8 @@ export default function VoiceWidget({ userName, onSendReady }: VoiceWidgetProps)
         isThinking={isSending || isUploadingPhoto}
         userName={userName}
         onSuggestionClick={handleTextSend}
+        recap={recap}
+        onDismissRecap={onDismissRecap}
       />
 
       {/* Action confirmation — shows what tool the agent is executing */}

@@ -1,8 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getUnitByTenant, getWorkOrders } from '@/services/api';
+import { getUnitByTenant, getWorkOrders, getTenantInsights, getSessionRecap } from '@/services/api';
 import { QUERY_KEYS } from '@/services/query-keys';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { PriorityBadge } from '@/components/dashboard/PriorityBadge';
@@ -84,6 +84,21 @@ export default function TenantReportPage() {
     queryFn: () => getWorkOrders(),
     refetchInterval: false,
   });
+
+  const { data: insightsSummary } = useQuery({
+    queryKey: QUERY_KEYS.tenantInsights(),
+    queryFn: getTenantInsights,
+    staleTime: 5 * 60 * 1000, // Cache 5 min — AI call is expensive
+  });
+
+  const { data: recapData } = useQuery({
+    queryKey: QUERY_KEYS.sessionRecap(),
+    queryFn: getSessionRecap,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const [recapDismissed, setRecapDismissed] = useState(false);
+  const activeRecap = !recapDismissed && recapData?.recap ? recapData as { recap: string; sessionAge: string } : null;
 
   const activeOrders = orders?.filter(
     (o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED',
@@ -187,6 +202,23 @@ export default function TenantReportPage() {
               ))}
             </div>
           </div>
+
+          {/* AI Insights card */}
+          {insightsSummary && (
+            <div className="glass-card p-5" style={{ borderLeft: '3px solid var(--primary)' }}>
+              <div className="flex items-center gap-1.5 mb-3">
+                <svg className="size-4 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z" />
+                </svg>
+                <p className="text-[10px] uppercase tracking-wider font-bold text-primary">AI Insights</p>
+              </div>
+              <p className="text-xs text-secondary-foreground leading-relaxed">{insightsSummary}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
+                <svg className="size-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 5h2v6h-2V7zm0 8h2v2h-2v-2z" /></svg>
+                Powered by Gemini
+              </p>
+            </div>
+          )}
         </aside>
 
         {/* ── Center: Voice Widget (hero) ───────────────── */}
@@ -195,6 +227,8 @@ export default function TenantReportPage() {
             <VoiceWidget
               userName={user?.name}
               onSendReady={(fn) => { sendToChat.current = fn; }}
+              recap={activeRecap}
+              onDismissRecap={() => setRecapDismissed(true)}
             />
           </div>
         </div>

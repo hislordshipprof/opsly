@@ -33,14 +33,66 @@ const SUGGESTIONS = [
   { label: "Where's my technician?", message: 'Where is my technician?', icon: 'M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z' },
 ];
 
+/** AI Tip card — distinct from regular chat bubbles */
+function AiTipCard({ content }: { content: string }) {
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 mx-1 my-1 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm overflow-hidden"
+      style={{ borderLeft: '3px solid var(--primary)' }}
+    >
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <svg className="size-4 text-primary" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z" />
+            </svg>
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">AI Tip</span>
+          </div>
+        </div>
+        <p className="text-sm leading-relaxed text-secondary-foreground">{content}</p>
+        <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
+          <svg className="size-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 5h2v6h-2V7zm0 8h2v2h-2v-2z" /></svg>
+          Powered by Gemini
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Session recap banner */
+function RecapBanner({ recap, sessionAge, onDismiss }: { recap: string; sessionAge: string; onDismiss: () => void }) {
+  return (
+    <div className="animate-in fade-in duration-300 mx-1 mb-2 rounded-xl border border-border/50 bg-accent/30 backdrop-blur-sm px-4 py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 mb-1">
+            <svg className="size-3.5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Last Session — {sessionAge}</span>
+          </div>
+          <p className="text-xs text-secondary-foreground leading-relaxed">{recap}</p>
+        </div>
+        <button
+          onClick={onDismiss}
+          className="text-[10px] text-muted-foreground hover:text-foreground shrink-0 mt-0.5"
+        >
+          Dismiss
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface TranscriptDisplayProps {
   entries: TranscriptEntry[];
   isThinking?: boolean;
   userName?: string;
   onSuggestionClick?: (text: string) => void;
+  recap?: { recap: string; sessionAge: string } | null;
+  onDismissRecap?: () => void;
 }
 
-export default function TranscriptDisplay({ entries, isThinking, userName, onSuggestionClick }: TranscriptDisplayProps) {
+export default function TranscriptDisplay({ entries, isThinking, userName, onSuggestionClick, recap, onDismissRecap }: TranscriptDisplayProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,7 +133,17 @@ export default function TranscriptDisplay({ entries, isThinking, userName, onSug
 
   return (
     <div className="flex flex-1 min-h-0 flex-col gap-3 overflow-y-auto scrollbar-none p-4">
+      {/* Recap banner at top */}
+      {recap?.recap && onDismissRecap && (
+        <RecapBanner recap={recap.recap} sessionAge={recap.sessionAge} onDismiss={onDismissRecap} />
+      )}
+
       {entries.map((entry, i) => {
+        // AI Tip card — special rendering
+        if (entry.metadata?.aiTip) {
+          return <AiTipCard key={i} content={entry.content} />;
+        }
+
         // Hide raw "[Photo uploaded: ...]" text when there's a photo preview
         const isPhotoPlaceholder = entry.metadata?.photoUrl && entry.content.startsWith('[Photo uploaded');
 

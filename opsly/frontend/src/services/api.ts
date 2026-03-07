@@ -237,4 +237,22 @@ export async function assessPhotoStandalone(
   return data;
 }
 
+/** AI Insights — maintenance tips for an issue */
+export async function getMaintenanceTips(issueCategory: string, issueDescription: string) {
+  const { data } = await api.post<{ tips: string }>('/ai/maintenance-tips', { issueCategory, issueDescription });
+  return data.tips;
+}
+
+/** AI Insights — tenant unit health summary */
+export async function getTenantInsights() {
+  const { data } = await api.get<{ summary: string }>('/ai/tenant-insights');
+  return data.summary;
+}
+
+/** AI Insights — recap of last AI session */
+export async function getSessionRecap() {
+  const { data } = await api.get<{ recap: string | null; sessionAge: string | null }>('/ai/session-recap');
+  return data;
+}
+
 export default api;

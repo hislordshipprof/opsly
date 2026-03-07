@@ -19,4 +19,6 @@ export const QUERY_KEYS = {
   properties: () => ['properties'] as const,
   schedule: (date?: string) => ['schedules', date] as const,
   tenantUnit: (tenantId: string) => ['tenant-unit', tenantId] as const,
+  tenantInsights: () => ['ai', 'tenant-insights'] as const,
+  sessionRecap: () => ['ai', 'session-recap'] as const,
 } as const;

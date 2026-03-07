@@ -18,6 +18,7 @@ export interface TranscriptEntry {
   timestamp: number;
   metadata?: {
     photoUrl?: string;
+    aiTip?: boolean;
   };
 }
 
@@ -50,7 +51,7 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
     options.onStateChange?.(newState);
   }, [options]);
 
-  const addTranscript = useCallback((role: 'user' | 'assistant', content: string, metadata?: { photoUrl?: string }) => {
+  const addTranscript = useCallback((role: 'user' | 'assistant', content: string, metadata?: TranscriptEntry['metadata']) => {
     if (!content.trim()) return;
     setTranscript((prev) => {
       const last = prev[prev.length - 1];
