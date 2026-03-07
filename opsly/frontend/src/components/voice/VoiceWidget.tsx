@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useVoiceSession } from '@/hooks/useVoiceSession';
 import { useAuth } from '@/hooks/useAuth';
 import MicButton from './MicButton';
@@ -14,7 +14,13 @@ import * as api from '@/services/api';
  * Connects to Gemini Live API, handles audio, displays transcript.
  * Falls back to text input if mic is unavailable.
  */
-export default function VoiceWidget() {
+interface VoiceWidgetProps {
+  userName?: string;
+  /** Parent calls this ref to send a message into the chat from outside */
+  onSendReady?: (send: (text: string) => void) => void;
+}
+
+export default function VoiceWidget({ userName, onSendReady }: VoiceWidgetProps) {
   const { user } = useAuth();
   const chatSessionRef = useRef<string | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -127,6 +133,13 @@ export default function VoiceWidget() {
     }
   }
 
+  // Expose send function to parent (for sidebar quick actions)
+  const sendFnRef = useRef(handleTextSend);
+  sendFnRef.current = handleTextSend;
+  useEffect(() => {
+    onSendReady?.((text: string) => sendFnRef.current(text));
+  }, [onSendReady]);
+
   /** Handle photo selection — assess standalone, then feed results to agent */
   async function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -190,7 +203,7 @@ export default function VoiceWidget() {
   }
 
   return (
-    <div className="flex w-full max-w-lg flex-col rounded-2xl">
+    <div className="flex h-full w-full max-w-lg flex-col rounded-2xl">
       {/* Header — connection status + agent badge */}
       <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
         <div className="flex items-center gap-2">
@@ -201,7 +214,12 @@ export default function VoiceWidget() {
       </div>
 
       {/* Transcript area */}
-      <TranscriptDisplay entries={transcript} isThinking={isSending || isUploadingPhoto} />
+      <TranscriptDisplay
+        entries={transcript}
+        isThinking={isSending || isUploadingPhoto}
+        userName={userName}
+        onSuggestionClick={handleTextSend}
+      />
 
       {/* Action confirmation — shows what tool the agent is executing */}
       <ActionConfirmation action={pendingAction} />
@@ -214,7 +232,7 @@ export default function VoiceWidget() {
       )}
 
       {/* Controls — single row: camera, mic, text input, send */}
-      <div className="border-t border-border/50 p-3">
+      <div className="mt-auto border-t border-border/50 p-3">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
