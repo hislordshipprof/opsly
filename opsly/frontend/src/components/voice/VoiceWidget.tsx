@@ -96,7 +96,7 @@ export default function VoiceWidget({ userName, onSendReady, recap, onDismissRec
     }
   }
 
-  const { state, transcript, activeAgent, error, start, stop, setActiveAgent, addTranscript } = useVoiceSession({
+  const { state, transcript, activeAgent, error, start, stop, sendText, setActiveAgent, addTranscript } = useVoiceSession({
     onToolCall: handleToolCall,
   });
 
@@ -176,17 +176,31 @@ export default function VoiceWidget({ userName, onSendReady, recap, onDismissRec
       const result = await api.assessPhotoStandalone(file);
       const a = result.assessment;
 
-      // Feed assessment back into the active chat session so the agent can use it
-      if (chatSessionRef.current) {
-        const contextMessage = `[Photo assessment completed: damageType=${a.damageType}, severity=${a.severity}, confidence=${a.confidence}, recommendedPriority=${a.recommendedPriority}, observations: ${a.observations?.join('; ') ?? 'none'}]`;
+      // Build the context message for the agent
+      const contextMessage = `[Photo assessment completed: damageType=${a.damageType}, severity=${a.severity}, confidence=${a.confidence}, recommendedPriority=${a.recommendedPriority}, observations: ${a.observations?.join('; ') ?? 'none'}]`;
+
+      // Route 1: Voice session active — inject into Gemini Live (interrupts current speech)
+      // Don't check state — onclose may briefly set it to IDLE during reconnection.
+      // sendText checks sessionRef internally and returns false if session is dead.
+      if (sendText(contextMessage, { silent: true })) {
+        // Sent through voice session — agent will naturally respond to the assessment
+      } else if (chatSessionRef.current) {
+        // Route 2: Text chat session active — send via REST API
         const res = await api.chat(contextMessage, chatSessionRef.current);
         if (res.agentName) setActiveAgent(res.agentName);
         addTranscript('assistant', res.text);
       } else {
-        // No active session — show raw assessment
-        addTranscript('assistant',
-          `I can see ${a.damageType?.replace(/_/g, ' ')} damage (severity: ${a.severity}). ` +
-          `Start a conversation so I can create a work order with this assessment.`);
+        // Route 3: No active session — start a new text chat with the assessment
+        try {
+          const res = await api.chat(contextMessage);
+          chatSessionRef.current = res.sessionId;
+          if (res.agentName) setActiveAgent(res.agentName);
+          addTranscript('assistant', res.text);
+        } catch {
+          addTranscript('assistant',
+            `Photo assessed: ${a.damageType?.replace(/_/g, ' ')} (severity: ${a.severity}). ` +
+            `You can continue via text to create a work order.`);
+        }
       }
 
       // If a work order already exists, attach photo immediately

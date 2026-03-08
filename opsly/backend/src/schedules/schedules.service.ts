@@ -188,7 +188,7 @@ export class SchedulesService {
   ) {
     const stop = await this.prisma.scheduleStop.findUnique({
       where: { id: stopId },
-      include: { schedule: true, workOrder: { select: { id: true, reportedById: true } } },
+      include: { schedule: true, workOrder: { select: { id: true, orderNumber: true, reportedById: true } } },
     });
 
     if (!stop) throw new NotFoundException(`Schedule stop ${stopId} not found`);
@@ -212,7 +212,7 @@ export class SchedulesService {
     });
 
     this.gateway.emitEtaUpdated(
-      { workOrderId: stop.workOrder.id, stopId, eta } as unknown as Record<string, unknown>,
+      { workOrderId: stop.workOrder.id, orderNumber: stop.workOrder.orderNumber, stopId, eta } as unknown as Record<string, unknown>,
       stop.workOrder.reportedById,
     );
 

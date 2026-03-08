@@ -259,6 +259,22 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
     updateState('IDLE');
   }, [transcript, updateState]);
 
+  /** Send text into the live Gemini session (interrupts current speech) */
+  const sendText = useCallback((text: string, opts?: { silent?: boolean }): boolean => {
+    if (!sessionRef.current) return false;
+    try {
+      playbackNodeRef.current?.port.postMessage({ clear: true });
+      sessionRef.current.send({ text });
+      if (!opts?.silent) {
+        addTranscript('user', text);
+      }
+      updateState('AGENT_THINKING');
+      return true;
+    } catch {
+      return false;
+    }
+  }, [addTranscript, updateState]);
+
   return {
     state,
     transcript,
@@ -266,6 +282,7 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
     error,
     start,
     stop,
+    sendText,
     setActiveAgent,
     addTranscript,
   };

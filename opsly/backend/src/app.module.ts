@@ -11,6 +11,7 @@ import { AgentSessionsModule } from './agent-sessions/agent-sessions.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { SchedulesModule } from './schedules/schedules.module.js';
 import { EscalationsModule } from './escalations/escalations.module.js';
+import { ChatModule } from './chat/chat.module.js';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { EscalationsModule } from './escalations/escalations.module.js';
     AiModule,
     SchedulesModule,
     EscalationsModule,
+    ChatModule,
   ],
 })
 export class AppModule {}

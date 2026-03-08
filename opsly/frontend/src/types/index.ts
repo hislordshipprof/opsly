@@ -93,6 +93,7 @@ export interface WorkOrderListItem {
   property: { name: string };
   reportedBy: { id: string; name: string };
   assignedTo: { id: string; name: string } | null;
+  currentEta: string | null;
 }
 
 /** Work order as returned from GET /work-orders/:id (detail view) */
@@ -202,6 +203,32 @@ export interface TechnicianSchedule {
   stops: ScheduleStop[];
 }
 
+// ─── Chat Types ───────────────────────────────────────
+
+export interface ChatMessage {
+  id: string;
+  workOrderId: string;
+  content: string;
+  createdAt: string;
+  sender: { id: string; name: string; role: Role };
+}
+
+export interface ChatThread {
+  workOrderId: string;
+  orderNumber: string;
+  issueDescription: string;
+  assignedTo: { id: string; name: string; role: Role } | null;
+  reportedBy: { id: string; name: string; role: Role };
+  lastMessage: {
+    id: string;
+    content: string;
+    createdAt: string;
+    senderId: string;
+    sender: { id: string; name: string; role: Role };
+  } | null;
+  totalMessages: number;
+}
+
 // ─── WebSocket Event Types ─────────────────────────────
 
 export type WsEventName =
@@ -212,4 +239,6 @@ export type WsEventName =
   | 'workorder.completed'
   | 'escalation.triggered'
   | 'escalation.acknowledged'
-  | 'metrics.snapshot_updated';
+  | 'workorder.eta_updated'
+  | 'metrics.snapshot_updated'
+  | 'chat.message_sent';

@@ -111,6 +111,7 @@ model User {
   schedules         TechnicianSchedule[]
   escalationContacts EscalationContact[]
   escalationAcks     EscalationLog[]    @relation("EscalationAck")
+  chatMessages       ChatMessage[]
 
   @@index([email])
   @@index([role])
@@ -179,6 +180,7 @@ model WorkOrder {
   agentSessions  AgentSession[]
   scheduleStops  ScheduleStop[]
   escalationLogs EscalationLog[]
+  chatMessages   ChatMessage[]
 
   @@index([orderNumber])
   @@index([propertyId])
@@ -305,4 +307,19 @@ model EscalationLog {
   @@index([contactId])
   @@index([ackReceived])
   @@index([createdAt])
+}
+
+model ChatMessage {
+  id          String   @id @default(uuid())
+  workOrderId String
+  senderId    String
+  content     String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id])
+  sender    User      @relation(fields: [senderId], references: [id])
+
+  @@index([workOrderId, createdAt])
+  @@index([senderId])
 }

@@ -91,6 +91,7 @@ export function useDashboardEvents() {
       'workorder.technician_assigned',
       'workorder.photo_assessed',
       'workorder.completed',
+      'workorder.eta_updated',
       'escalation.triggered',
       'escalation.acknowledged',
       'metrics.snapshot_updated',
@@ -146,6 +147,7 @@ export function useWorkOrderEvents(
       'workorder.technician_assigned',
       'workorder.photo_assessed',
       'workorder.completed',
+      'workorder.eta_updated',
     ];
 
     const unsubscribers = events.map((event) =>

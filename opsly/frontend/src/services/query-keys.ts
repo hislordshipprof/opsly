@@ -21,4 +21,6 @@ export const QUERY_KEYS = {
   tenantUnit: (tenantId: string) => ['tenant-unit', tenantId] as const,
   tenantInsights: () => ['ai', 'tenant-insights'] as const,
   sessionRecap: () => ['ai', 'session-recap'] as const,
+  chatMessages: (workOrderId: string) => ['chat', workOrderId] as const,
+  chatThreads: () => ['chat', 'threads'] as const,
 } as const;

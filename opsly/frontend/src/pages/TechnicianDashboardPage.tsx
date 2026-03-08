@@ -7,7 +7,7 @@ import { useDashboardEvents } from '@/hooks/useWebSocket';
 import { JobDetailPanel } from '@/components/technician/JobDetail';
 import { SlaCountdown } from '@/components/dashboard/SlaCountdown';
 import { PriorityBadge } from '@/components/dashboard/PriorityBadge';
-import VoiceWidget from '@/components/voice/VoiceWidget';
+import TechnicianVoiceWidget from '@/components/technician/TechnicianVoiceWidget';
 import type { TechnicianSchedule, ScheduleStop } from '@/types';
 import { StopStatus } from '@/types';
 
@@ -158,12 +158,95 @@ function EmptyDetailState({
   );
 }
 
+/* ── History Card ─────────────────────────────────────── */
+
+function HistoryCard({ stop }: { stop: ScheduleStop }) {
+  const wo = stop.workOrder;
+
+  return (
+    <div className="glass-card p-5 flex items-center gap-4 hover:shadow-md transition-all cursor-pointer">
+      <div className="size-9 rounded-xl bg-opsly-low/8 flex items-center justify-center text-opsly-low font-bold text-sm shrink-0">
+        {'\u2713'}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="font-mono text-sm font-bold">{wo.orderNumber}</span>
+          <PriorityBadge priority={wo.priority} />
+        </div>
+        <p className="text-xs text-muted-foreground truncate">
+          {wo.unit.property.address} / {wo.unit.unitNumber} &mdash; {wo.issueDescription}
+        </p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className="font-mono text-[11px] text-muted-foreground">
+          {stop.actualArrival
+            ? new Date(stop.actualArrival).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+            : 'Today'}
+        </p>
+        {wo.resolutionNotes && (
+          <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[160px] truncate">
+            {wo.resolutionNotes}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── History View ─────────────────────────────────────── */
+
+function HistoryView({ completedStops }: { completedStops: ScheduleStop[] }) {
+  return (
+    <div className="glass-card p-7 flex-1">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">Job History</h2>
+        <span className="text-xs text-muted-foreground">
+          {completedStops.length} job{completedStops.length !== 1 ? 's' : ''} completed today
+        </span>
+      </div>
+
+      {completedStops.length === 0 ? (
+        <div className="flex flex-col items-center justify-center text-center py-16">
+          <div className="size-16 rounded-full bg-muted/40 flex items-center justify-center mb-4">
+            <svg className="size-7 text-muted-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </div>
+          <p className="text-lg font-bold mb-1">No completed jobs yet</p>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            Jobs you complete today will appear here with resolution notes and timestamps.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {completedStops.map((stop) => (
+            <HistoryCard key={stop.id} stop={stop} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Inline Chat Column ───────────────────────────────── */
+
+function ChatColumn({ selectedWorkOrderNumber }: { selectedWorkOrderNumber?: string }) {
+  return (
+    <aside className="hidden lg:flex w-[380px] shrink-0">
+      <div className="glass-card-heavy overflow-hidden shadow-lg ring-1 ring-border/10 w-full flex flex-col" style={{ height: 'calc(100vh - 128px)' }}>
+        <TechnicianVoiceWidget selectedWorkOrderNumber={selectedWorkOrderNumber} />
+      </div>
+    </aside>
+  );
+}
+
 /* ── Main Page ────────────────────────────────────────── */
 
 export default function TechnicianDashboardPage() {
   const { user, logout } = useAuth();
   const { isConnected } = useDashboardEvents();
   const [activeStopId, setActiveStopId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'jobs' | 'history'>('jobs');
 
   const { data: schedule, isLoading } = useQuery<TechnicianSchedule | null>({
     queryKey: QUERY_KEYS.schedule(),
@@ -173,7 +256,8 @@ export default function TechnicianDashboardPage() {
 
   const stops = schedule?.stops ?? [];
   const activeStop = stops.find((s) => s.id === activeStopId) ?? null;
-  const completed = stops.filter((s) => s.status === StopStatus.COMPLETED || s.status === StopStatus.SKIPPED).length;
+  const completedStops = stops.filter((s) => s.status === StopStatus.COMPLETED || s.status === StopStatus.SKIPPED);
+  const completed = completedStops.length;
   const remaining = stops.length - completed;
   const recommendedStop = stops.find((s) => s.status === StopStatus.ARRIVED || s.status === StopStatus.EN_ROUTE)
     ?? stops.find((s) => s.status === StopStatus.PENDING);
@@ -200,8 +284,18 @@ export default function TechnicianDashboardPage() {
           <div className="flex items-center gap-8">
             <h1 className="text-xl font-bold tracking-tight select-none">OPSLY</h1>
             <div className="flex items-center gap-1">
-              <span className="pill-active text-xs">My Jobs</span>
-              <span className="pill-inactive text-xs">History</span>
+              <button
+                onClick={() => setActiveTab('jobs')}
+                className={`${activeTab === 'jobs' ? 'pill-active' : 'pill-inactive'} text-xs`}
+              >
+                My Jobs
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`${activeTab === 'history' ? 'pill-active' : 'pill-inactive'} text-xs`}
+              >
+                History
+              </button>
             </div>
           </div>
           <div className="flex items-center gap-5">
@@ -253,72 +347,86 @@ export default function TechnicianDashboardPage() {
           </>
         )}
 
-        {/* ── Sidebar: Queue ──────────────────────────── */}
-        {!isLoading && stops.length > 0 && (
-          <aside className="w-full md:w-[400px] flex flex-col shrink-0">
-            <RouteSummary
-              schedule={schedule ?? null}
-              stops={stops}
-              completed={completed}
-              remaining={remaining}
-            />
+        {/* ═══ MY JOBS TAB ═══════════════════════════════ */}
+        {!isLoading && activeTab === 'jobs' && (
+          <>
+            {/* Sidebar: Queue */}
+            {stops.length > 0 && (
+              <aside className="w-full md:w-[400px] flex flex-col shrink-0">
+                <RouteSummary
+                  schedule={schedule ?? null}
+                  stops={stops}
+                  completed={completed}
+                  remaining={remaining}
+                />
 
-            <div className="glass-card p-5 flex-1 flex flex-col">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-bold">Today's Queue</h2>
-                <span className="text-[10px] font-bold text-muted-foreground px-2 py-1 rounded bg-muted/50 uppercase tracking-wider">
-                  {completed}/{stops.length} Complete
-                </span>
-              </div>
+                <div className="glass-card p-5 flex-1 flex flex-col">
+                  <div className="flex items-center justify-between mb-5">
+                    <h2 className="text-lg font-bold">Today's Queue</h2>
+                    <span className="text-[10px] font-bold text-muted-foreground px-2 py-1 rounded bg-muted/50 uppercase tracking-wider">
+                      {completed}/{stops.length} Complete
+                    </span>
+                  </div>
 
-              <div className="space-y-3 overflow-y-auto flex-1" style={{ maxHeight: 'calc(100vh - 520px)' }}>
-                {stops.map((stop, i) => (
-                  <SidebarJobCard
-                    key={stop.id}
-                    stop={stop}
-                    isActive={activeStopId === stop.id}
-                    isRecommended={i === 0 && stop.id === recommendedStop?.id}
-                    onClick={() => setActiveStopId(stop.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          </aside>
-        )}
-
-        {/* ── Detail Panel ────────────────────────────── */}
-        {!isLoading && stops.length > 0 && remaining > 0 && (
-          <section className="flex-1 flex flex-col min-w-0">
-            {activeStop ? (
-              <JobDetailPanel stop={activeStop} onBack={() => setActiveStopId(null)} />
-            ) : (
-              <EmptyDetailState recommendedStop={recommendedStop} onSelect={setActiveStopId} />
+                  <div className="space-y-3 overflow-y-auto flex-1" style={{ maxHeight: 'calc(100vh - 520px)' }}>
+                    {stops.map((stop, i) => (
+                      <SidebarJobCard
+                        key={stop.id}
+                        stop={stop}
+                        isActive={activeStopId === stop.id}
+                        isRecommended={i === 0 && stop.id === recommendedStop?.id}
+                        onClick={() => setActiveStopId(stop.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </aside>
             )}
-          </section>
+
+            {/* Detail Panel + Chat — active jobs */}
+            {stops.length > 0 && remaining > 0 && (
+              <>
+                <section className="flex-1 flex flex-col min-w-0">
+                  {activeStop ? (
+                    <JobDetailPanel stop={activeStop} onBack={() => setActiveStopId(null)} />
+                  ) : (
+                    <EmptyDetailState recommendedStop={recommendedStop} onSelect={setActiveStopId} />
+                  )}
+                </section>
+                <ChatColumn selectedWorkOrderNumber={activeStop?.workOrder.orderNumber} />
+              </>
+            )}
+
+            {/* All jobs completed — or no schedule */}
+            {((stops.length === 0) || (stops.length > 0 && remaining === 0 && !activeStop)) && (
+              <>
+                <section className="flex-1 flex items-center justify-center">
+                  <div className="glass-card p-12 flex flex-col items-center text-center max-w-md">
+                    <div className="size-20 rounded-full bg-opsly-low/10 flex items-center justify-center mb-4">
+                      <span className="text-3xl text-opsly-low">&#10003;</span>
+                    </div>
+                    <p className="text-lg font-bold">All clear for today</p>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+                      No jobs scheduled. Use the voice widget to check for updates.
+                    </p>
+                  </div>
+                </section>
+                <ChatColumn />
+              </>
+            )}
+          </>
         )}
 
-        {/* All jobs completed — or no schedule at all */}
-        {!isLoading && ((stops.length === 0) || (stops.length > 0 && remaining === 0 && !activeStop)) && (
-          <section className="flex-1 flex items-center justify-center">
-            <div className="glass-card p-12 flex flex-col items-center text-center max-w-md">
-              <div className="size-20 rounded-full bg-opsly-low/10 flex items-center justify-center mb-4">
-                <span className="text-3xl text-opsly-low">&#10003;</span>
-              </div>
-              <p className="text-lg font-bold">All clear for today</p>
-              <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-                No jobs scheduled. Use the voice widget to check for updates.
-              </p>
-            </div>
-          </section>
+        {/* ═══ HISTORY TAB ═══════════════════════════════ */}
+        {!isLoading && activeTab === 'history' && (
+          <>
+            <section className="flex-1 flex flex-col min-w-0">
+              <HistoryView completedStops={completedStops} />
+            </section>
+            <ChatColumn />
+          </>
         )}
       </main>
-
-      {/* ── Floating Voice Widget ─────────────────────── */}
-      <div className="fixed bottom-8 right-8 z-40 w-[380px] hidden md:block">
-        <div className="glass-card-heavy overflow-hidden shadow-2xl ring-4 ring-border/10">
-          <VoiceWidget />
-        </div>
-      </div>
     </div>
   );
 }

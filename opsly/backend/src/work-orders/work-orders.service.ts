@@ -95,7 +95,7 @@ export class WorkOrdersService {
       where.assignedToId = query.assignedToId;
     }
 
-    return this.prisma.workOrder.findMany({
+    const rows = await this.prisma.workOrder.findMany({
       where,
       select: {
         id: true,
@@ -112,11 +112,23 @@ export class WorkOrdersService {
         property: { select: { name: true } },
         reportedBy: { select: { id: true, name: true } },
         assignedTo: { select: { id: true, name: true } },
+        scheduleStops: {
+          where: { status: { notIn: ['COMPLETED', 'SKIPPED'] } },
+          select: { plannedEta: true },
+          orderBy: { sequenceNumber: 'asc' as const },
+          take: 1,
+        },
       },
       orderBy: { createdAt: 'desc' },
       take: query.take ?? 50,
       skip: query.skip ?? 0,
     });
+
+    // Flatten scheduleStops[0].plannedEta → currentEta for clean API response
+    return rows.map(({ scheduleStops, ...rest }) => ({
+      ...rest,
+      currentEta: scheduleStops[0]?.plannedEta?.toISOString() ?? null,
+    }));
   }
 
   async findByOrderNumber(orderNumber: string, userId: string, userRole: Role) {

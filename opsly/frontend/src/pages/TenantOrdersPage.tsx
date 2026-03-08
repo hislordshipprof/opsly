@@ -1,11 +1,14 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getWorkOrders } from '@/services/api';
 import { QUERY_KEYS } from '@/services/query-keys';
 import { PriorityBadge } from '@/components/dashboard/PriorityBadge';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { SlaCountdown } from '@/components/dashboard/SlaCountdown';
+import { ChatPanel } from '@/components/chat/ChatPanel';
+import { ChatNotificationDropdown } from '@/components/chat/ChatNotificationDropdown';
 import type { WorkOrderListItem } from '@/types';
 function timeAgo(date: string): string {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
@@ -20,50 +23,92 @@ function timeAgo(date: string): string {
 
 /* ── Work Order Card ─────────────────────────────────────── */
 
-function WorkOrderCard({ order }: { order: WorkOrderListItem }) {
+function WorkOrderCard({ order, autoOpenChat = false }: { order: WorkOrderListItem; autoOpenChat?: boolean }) {
+  const [showChat, setShowChat] = useState(autoOpenChat);
+  const hasTechnician = !!order.assignedTo;
+  const etaMins = order.status === 'EN_ROUTE' && (order as any).currentEta
+    ? Math.max(1, Math.round((new Date((order as any).currentEta).getTime() - Date.now()) / 60_000))
+    : null;
+
   return (
-    <div className="glass-card p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-sm font-bold">{order.orderNumber}</span>
-          <StatusBadge status={order.status} />
-          <PriorityBadge priority={order.priority} />
+    <div className="glass-card overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+      <div className="p-5">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-sm font-bold">{order.orderNumber}</span>
+            <StatusBadge status={order.status} />
+            <PriorityBadge priority={order.priority} />
+          </div>
+          <SlaCountdown slaDeadline={order.slaDeadline} slaBreached={order.slaBreached} />
         </div>
-        <SlaCountdown slaDeadline={order.slaDeadline} slaBreached={order.slaBreached} />
+
+        <p className="text-sm text-secondary-foreground leading-relaxed mb-3 line-clamp-2">
+          {order.issueDescription}
+        </p>
+
+        {/* ETA banner when technician is en route */}
+        {etaMins != null && (
+          <div className="mb-3 flex items-center gap-1.5 text-primary text-xs font-medium bg-primary/10 rounded-lg px-2.5 py-1.5">
+            <svg className="size-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Technician arriving in ~{etaMins} min
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-3 border-t border-border/40">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Property
+              </span>
+              <span className="text-xs font-medium text-foreground mt-0.5">
+                {order.property.name}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Unit
+              </span>
+              <span className="text-xs font-medium text-foreground mt-0.5">
+                {order.unit.unitNumber}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {hasTechnician && (
+              <button
+                onClick={() => setShowChat((p) => !p)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all ${
+                  showChat
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border/60 bg-card/50 text-secondary-foreground hover:border-primary hover:text-primary'
+                }`}
+              >
+                <svg className="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Chat
+              </button>
+            )}
+            <div className="text-right">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Reported
+              </span>
+              <p className="text-xs font-medium text-foreground mt-0.5">
+                {timeAgo(order.createdAt)}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <p className="text-sm text-secondary-foreground leading-relaxed mb-3 line-clamp-2">
-        {order.issueDescription}
-      </p>
-
-      <div className="flex items-center justify-between pt-3 border-t border-border/40">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              Property
-            </span>
-            <span className="text-xs font-medium text-foreground mt-0.5">
-              {order.property.name}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              Unit
-            </span>
-            <span className="text-xs font-medium text-foreground mt-0.5">
-              {order.unit.unitNumber}
-            </span>
-          </div>
+      {/* Expandable Chat Panel */}
+      {showChat && (
+        <div className="h-[300px] border-t border-border/40">
+          <ChatPanel workOrderId={order.id} />
         </div>
-        <div className="text-right">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            Reported
-          </span>
-          <p className="text-xs font-medium text-foreground mt-0.5">
-            {timeAgo(order.createdAt)}
-          </p>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -113,12 +158,21 @@ function LoadingSkeleton() {
 export default function TenantOrdersPage() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const chatWorkOrderId = searchParams.get('chat');
 
   const { data: orders, isLoading } = useQuery<WorkOrderListItem[]>({
     queryKey: QUERY_KEYS.workOrders(),
     queryFn: () => getWorkOrders(),
     refetchInterval: false,
   });
+
+  // Clear chat param after first render so it doesn't persist on refresh
+  useEffect(() => {
+    if (chatWorkOrderId) {
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <main className="min-h-screen">
@@ -142,6 +196,7 @@ export default function TenantOrdersPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <ChatNotificationDropdown />
             <span className="text-sm text-muted-foreground">
               {user?.email}
             </span>
@@ -170,7 +225,7 @@ export default function TenantOrdersPage() {
         {!isLoading && orders && orders.length > 0 && (
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {orders.map((order) => (
-              <WorkOrderCard key={order.id} order={order} />
+              <WorkOrderCard key={order.id} order={order} autoOpenChat={order.id === chatWorkOrderId} />
             ))}
           </div>
         )}

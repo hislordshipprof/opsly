@@ -150,6 +150,18 @@ async function main() {
       status: WorkOrderStatus.ASSIGNED, priority: Priority.MEDIUM,
       slaDeadline: hoursFromNow(18), createdAt: hoursAgo(6), // 18h left — day-scale
       aiSeverityScore: 0.63,
+      visionAssessment: {
+        damageType: 'appliance_failure',
+        severity: 'MEDIUM',
+        confidence: 0.87,
+        description: 'Standing water visible at bottom of dishwasher basin. Drain filter area shows debris accumulation.',
+        recommendations: [
+          'Check drain filter and hose for blockage',
+          'Inspect drain pump for debris or damage',
+          'Verify garbage disposal connection if applicable',
+        ],
+        recommendedPriority: 'MEDIUM',
+      },
     },
 
     // 2x IN_PROGRESS (actively being worked on)
@@ -227,6 +239,7 @@ async function main() {
         status: wo.status,
         priority: wo.priority,
         aiSeverityScore: wo.aiSeverityScore ?? null,
+        visionAssessment: (wo as any).visionAssessment ?? undefined,
         slaDeadline: wo.slaDeadline,
         slaBreached: wo.slaBreached ?? false,
         resolutionNotes: wo.resolutionNotes ?? null,

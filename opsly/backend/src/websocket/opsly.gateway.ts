@@ -236,6 +236,18 @@ export class OpslyGateway
     );
   }
 
+  /** Chat message sent → work order room + personal rooms for notification */
+  emitChatMessage(
+    workOrderId: string,
+    message: Record<string, unknown>,
+  ) {
+    this.emitToRoom(
+      `workorder:${workOrderId}`,
+      'chat.message_sent',
+      message,
+    );
+  }
+
   /** Generic emit to a specific room with standard envelope */
   private emitToRoom(
     room: string,

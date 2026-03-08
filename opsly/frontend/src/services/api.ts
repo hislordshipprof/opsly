@@ -160,6 +160,11 @@ export async function updateStopStatus(stopId: string, status: string, notes?: s
   return data;
 }
 
+export async function updateStopEta(stopId: string, eta: string) {
+  const { data } = await api.patch(`/schedules/stops/${stopId}/eta`, { eta });
+  return data;
+}
+
 // ─── Escalation APIs ─────────────────────────────────
 
 export async function getActiveEscalations() {
@@ -252,6 +257,27 @@ export async function getTenantInsights() {
 /** AI Insights — recap of last AI session */
 export async function getSessionRecap() {
   const { data } = await api.get<{ recap: string | null; sessionAge: string | null }>('/ai/session-recap');
+  return data;
+}
+
+// ─── In-App Chat APIs ─────────────────────────────────
+
+import type { ChatMessage, ChatThread } from '@/types';
+
+export async function getChatThreads(): Promise<ChatThread[]> {
+  const { data } = await api.get<ChatThread[]>('/chat/threads');
+  return data;
+}
+
+export async function getChatMessages(workOrderId: string, cursor?: string): Promise<ChatMessage[]> {
+  const params: Record<string, string> = {};
+  if (cursor) params.cursor = cursor;
+  const { data } = await api.get<ChatMessage[]>(`/chat/${workOrderId}/messages`, { params });
+  return data;
+}
+
+export async function sendChatMessage(workOrderId: string, content: string): Promise<ChatMessage> {
+  const { data } = await api.post<ChatMessage>(`/chat/${workOrderId}/messages`, { content });
   return data;
 }
 

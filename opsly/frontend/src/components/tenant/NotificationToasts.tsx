@@ -45,6 +45,17 @@ function toastFromEvent(event: string, data: Record<string, unknown>): Omit<Toas
         accent: 'border-l-opsly-low',
         icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
       };
+    case 'workorder.eta_updated': {
+      const eta = data.eta as string | undefined;
+      const mins = eta ? Math.max(1, Math.round((new Date(eta).getTime() - Date.now()) / 60_000)) : null;
+      return {
+        message: mins
+          ? `Technician arriving in ~${mins} min for ${orderNum}`
+          : `Technician ETA updated for ${orderNum}`,
+        accent: 'border-l-primary',
+        icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+      };
+    }
     case 'escalation.triggered':
       return {
         message: `${orderNum} has been escalated — SLA breach`,
@@ -86,6 +97,7 @@ export default function NotificationToasts() {
       'workorder.technician_assigned',
       'workorder.photo_assessed',
       'workorder.completed',
+      'workorder.eta_updated',
       'escalation.triggered',
     ];
 

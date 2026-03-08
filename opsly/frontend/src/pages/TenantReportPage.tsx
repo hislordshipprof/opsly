@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getUnitByTenant, getWorkOrders, getTenantInsights, getSessionRecap } from '@/services/api';
@@ -8,6 +9,7 @@ import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { PriorityBadge } from '@/components/dashboard/PriorityBadge';
 import VoiceWidget from '@/components/voice/VoiceWidget';
 import NotificationToasts from '@/components/tenant/NotificationToasts';
+import { ChatNotificationDropdown } from '@/components/chat/ChatNotificationDropdown';
 import type { WorkOrderListItem } from '@/types';
 
 /* ── Helpers ────────────────────────────────────────────── */
@@ -120,6 +122,33 @@ export default function TenantReportPage() {
 
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  // Track ETA per work order — seed from API, update via WebSocket
+  const [etaMap, setEtaMap] = useState<Record<string, string>>({});
+  const { subscribe, isConnected } = useWebSocket();
+
+  // Seed etaMap from API response so ETA persists across page refreshes
+  useEffect(() => {
+    if (!orders) return;
+    const apiEtas: Record<string, string> = {};
+    for (const o of orders) {
+      if (o.currentEta) apiEtas[o.id] = o.currentEta;
+    }
+    if (Object.keys(apiEtas).length > 0) {
+      setEtaMap((prev) => ({ ...apiEtas, ...prev }));
+    }
+  }, [orders]);
+
+  // Live updates from WebSocket
+  useEffect(() => {
+    if (!isConnected) return;
+    const unsub = subscribe('workorder.eta_updated', (payload: { data: Record<string, unknown> }) => {
+      const woId = payload.data.workOrderId as string;
+      const eta = payload.data.eta as string;
+      if (woId && eta) setEtaMap((prev) => ({ ...prev, [woId]: eta }));
+    });
+    return unsub;
+  }, [isConnected, subscribe]);
   const activeRecap = !recapDismissed && recapData?.recap ? recapData as { recap: string; sessionAge: string } : null;
 
   const activeOrders = orders?.filter(
@@ -163,6 +192,7 @@ export default function TenantReportPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <ChatNotificationDropdown />
             <span className="text-sm text-muted-foreground">{user?.email}</span>
             <button
               onClick={logout}
@@ -304,6 +334,18 @@ export default function TenantReportPage() {
                     <StatusBadge status={order.status} />
                     <span className="text-[10px] text-muted-foreground font-mono">{timeAgo(order.createdAt)}</span>
                   </div>
+                  {/* ETA banner when technician is en route */}
+                  {order.status === 'EN_ROUTE' && etaMap[order.id] && (() => {
+                    const mins = Math.max(1, Math.round((new Date(etaMap[order.id]).getTime() - Date.now()) / 60_000));
+                    return (
+                      <div className="mt-2 flex items-center gap-1.5 text-primary text-[11px] font-medium bg-primary/10 rounded-lg px-2.5 py-1.5">
+                        <svg className="size-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Technician arriving in ~{mins} min
+                      </div>
+                    );
+                  })()}
                 </button>
 
                 {/* Timeline expansion */}
