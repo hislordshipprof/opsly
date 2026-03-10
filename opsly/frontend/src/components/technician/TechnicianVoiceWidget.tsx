@@ -68,11 +68,11 @@ export default function TechnicianVoiceWidget({
     }
   }
 
-  const { state, transcript, activeAgent, error, start, stop, setActiveAgent, addTranscript } = useVoiceSession({
+  const { state, transcript, activeAgent, error, start, stop, sendText, setActiveAgent, addTranscript } = useVoiceSession({
     onToolCall: handleToolCall,
   });
 
-  /** Send text via the chat API */
+  /** Send text via the REST chat API (fallback when voice is not active) */
   async function handleTextSend(text: string) {
     // Prepend job context on first message if a work order is selected
     const contextPrefix = selectedWorkOrderNumber && !chatSessionRef.current
@@ -92,6 +92,22 @@ export default function TechnicianVoiceWidget({
       setIsSending(false);
     }
   }
+
+  /** Quick action click — start voice session and send text so agent speaks the answer */
+  const handleSuggestionClick = useCallback(async (text: string) => {
+    // If voice is already active, send directly into the live session
+    if (sendText(text)) return;
+
+    // Voice not active — start session first, then send once connected
+    try {
+      await start();
+      // Small delay to let the session establish before sending text
+      setTimeout(() => { sendText(text); }, 1500);
+    } catch {
+      // Voice failed — fall back to text chat
+      handleTextSend(text);
+    }
+  }, [sendText, start]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset chat session when selected work order changes so context prefix re-fires
   useEffect(() => {
@@ -114,7 +130,7 @@ export default function TechnicianVoiceWidget({
         entries={transcript}
         isThinking={isSending}
         userName={userName}
-        onSuggestionClick={handleTextSend}
+        onSuggestionClick={handleSuggestionClick}
         recap={recap}
         onDismissRecap={onDismissRecap}
       />

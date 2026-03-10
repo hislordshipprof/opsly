@@ -25,10 +25,10 @@ export default function ManagerDashboardPage() {
       </div>
 
       {/* Top Navigation */}
-      <header className="glass-nav sticky top-0 z-30 px-6 py-3">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <h1 className="text-lg font-bold tracking-tight select-none">OPSLY</h1>
+      <header className="glass-nav sticky top-0 z-30 px-3 sm:px-6 py-3 w-full">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <h1 className="text-lg font-bold tracking-tight select-none shrink-0">OPSLY</h1>
             <nav className="hidden md:flex items-center gap-1">
               <span className="nav-tab-active">Dashboard</span>
               <span className="nav-tab-inactive cursor-pointer">Properties</span>
@@ -36,9 +36,9 @@ export default function ManagerDashboardPage() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {/* Connection indicator with animated ping */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/30 bg-white/40 dark:border-border dark:bg-card/40">
+            <div className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full border border-white/30 bg-white/40 dark:border-border dark:bg-card/40">
               <span className="relative flex size-2">
                 {isConnected && (
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-opsly-low opacity-75" />
@@ -47,13 +47,13 @@ export default function ManagerDashboardPage() {
                   isConnected ? 'bg-opsly-low' : 'bg-opsly-urgent animate-pulse'
                 }`} />
               </span>
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-xs font-medium text-muted-foreground hidden sm:inline">
                 {isConnected ? 'Live' : 'Connecting...'}
               </span>
             </div>
 
             {/* Separator */}
-            <div className="h-5 w-px bg-border/50" />
+            <div className="h-5 w-px bg-border/50 hidden sm:block" />
 
             {/* User info — enhanced with role label */}
             <div className="flex items-center gap-2.5">
@@ -71,11 +71,18 @@ export default function ManagerDashboardPage() {
                   Sign out
                 </button>
               </div>
-              <div className="size-9 rounded-full bg-indigo-100/80 dark:bg-primary/10 flex items-center justify-center ring-2 ring-white/50 dark:ring-primary/5">
+              <div className="size-8 sm:size-9 rounded-full bg-indigo-100/80 dark:bg-primary/10 flex items-center justify-center ring-2 ring-white/50 dark:ring-primary/5">
                 <span className="text-xs font-bold text-indigo-700 dark:text-primary">
                   {(user?.name ?? user?.email ?? 'M').charAt(0).toUpperCase()}
                 </span>
               </div>
+              {/* Mobile-only sign out (when user info is hidden) */}
+              <button
+                onClick={logout}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors sm:hidden"
+              >
+                Sign out
+              </button>
             </div>
           </div>
         </div>

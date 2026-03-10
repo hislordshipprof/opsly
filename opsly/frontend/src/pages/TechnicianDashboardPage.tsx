@@ -232,7 +232,7 @@ function HistoryView({ completedStops }: { completedStops: ScheduleStop[] }) {
 
 function ChatColumn({ selectedWorkOrderNumber }: { selectedWorkOrderNumber?: string }) {
   return (
-    <aside className="hidden lg:flex w-[380px] shrink-0">
+    <aside className="hidden xl:flex w-[380px] shrink-0">
       <div className="glass-card-heavy overflow-hidden shadow-lg ring-1 ring-border/10 w-full flex flex-col" style={{ height: 'calc(100vh - 128px)' }}>
         <TechnicianVoiceWidget selectedWorkOrderNumber={selectedWorkOrderNumber} />
       </div>
@@ -247,6 +247,7 @@ export default function TechnicianDashboardPage() {
   const { isConnected } = useDashboardEvents();
   const [activeStopId, setActiveStopId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'jobs' | 'history'>('jobs');
+  const [voicePanelOpen, setVoicePanelOpen] = useState(false);
 
   const { data: schedule, isLoading } = useQuery<TechnicianSchedule | null>({
     queryKey: QUERY_KEYS.schedule(),
@@ -279,10 +280,10 @@ export default function TechnicianDashboardPage() {
   return (
     <div className="min-h-screen">
       {/* ── Nav ─────────────────────────────────────────── */}
-      <header className="glass-nav sticky top-0 z-30 px-6 h-16">
-        <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold tracking-tight select-none">OPSLY</h1>
+      <header className="glass-nav sticky top-0 z-30 px-3 sm:px-6 h-14 sm:h-16 w-full">
+        <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 sm:gap-8 min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight select-none shrink-0">OPSLY</h1>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setActiveTab('jobs')}
@@ -298,30 +299,30 @@ export default function TechnicianDashboardPage() {
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-opsly-low/8 border border-opsly-low/15">
+          <div className="flex items-center gap-2 sm:gap-5 shrink-0">
+            <div className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full bg-opsly-low/8 border border-opsly-low/15">
               <span className="relative flex size-2">
                 {isConnected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-opsly-low opacity-75" />}
                 <span className={`relative inline-flex rounded-full size-2 ${isConnected ? 'bg-opsly-low' : 'bg-muted-foreground'}`} />
               </span>
-              <span className={`text-[10px] font-bold uppercase tracking-wider ${isConnected ? 'text-opsly-low' : 'text-muted-foreground'}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${isConnected ? 'text-opsly-low' : 'text-muted-foreground'} hidden sm:inline`}>
                 {isConnected ? 'Live' : 'Offline'}
               </span>
             </div>
-            <div className="h-5 w-px bg-border" />
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
+            <div className="h-5 w-px bg-border hidden sm:block" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="text-right hidden md:block">
                 <p className="text-sm font-bold leading-none">{user?.email?.split('@')[0] ?? 'Technician'}</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Senior Technician</p>
               </div>
-              <div className="size-10 rounded-full bg-muted/60 flex items-center justify-center ring-1 ring-border">
-                <span className="text-sm font-bold text-muted-foreground">
+              <div className="size-8 sm:size-10 rounded-full bg-muted/60 flex items-center justify-center ring-1 ring-border">
+                <span className="text-xs sm:text-sm font-bold text-muted-foreground">
                   {user?.email?.charAt(0).toUpperCase() ?? 'T'}
                 </span>
               </div>
               <button
                 onClick={logout}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Sign out
               </button>
@@ -331,12 +332,12 @@ export default function TechnicianDashboardPage() {
       </header>
 
       {/* ── Content ────────────────────────────────────── */}
-      <main className="max-w-[1440px] mx-auto w-full px-6 py-8 flex flex-col md:flex-row gap-8">
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-6 py-4 sm:py-8 flex flex-col md:flex-row gap-4 sm:gap-8">
 
         {/* Loading skeleton */}
         {isLoading && (
           <>
-            <aside className="w-full md:w-[400px] shrink-0 space-y-4">
+            <aside className="w-full md:w-[340px] xl:w-[400px] shrink-0 space-y-4">
               <div className="glass-card h-64 animate-pulse" />
               <div className="glass-card h-20 animate-pulse" />
               <div className="glass-card h-20 animate-pulse" />
@@ -352,7 +353,7 @@ export default function TechnicianDashboardPage() {
           <>
             {/* Sidebar: Queue */}
             {stops.length > 0 && (
-              <aside className="w-full md:w-[400px] flex flex-col shrink-0">
+              <aside className="w-full md:w-[340px] xl:w-[400px] flex flex-col shrink-0">
                 <RouteSummary
                   schedule={schedule ?? null}
                   stops={stops}
@@ -427,6 +428,41 @@ export default function TechnicianDashboardPage() {
           </>
         )}
       </main>
+
+      {/* ── Floating Voice Button (below xl only) ──────── */}
+      <button
+        onClick={() => setVoicePanelOpen(true)}
+        className="fixed bottom-6 right-6 z-40 xl:hidden size-14 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-all flex items-center justify-center"
+        aria-label="Open OPSLY Voice"
+      >
+        <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+        </svg>
+      </button>
+
+      {/* ── Voice Slide-over Panel (below xl only) ──────── */}
+      {voicePanelOpen && (
+        <div className="fixed inset-0 z-50 xl:hidden">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setVoicePanelOpen(false)} />
+          {/* Panel */}
+          <div className="absolute right-0 top-0 h-full w-full max-w-md flex flex-col animate-in slide-in-from-right duration-200">
+            <div className="glass-card-heavy m-3 mt-3 flex-1 flex flex-col overflow-hidden shadow-2xl ring-1 ring-border/10 rounded-2xl">
+              {/* Close button */}
+              <button
+                onClick={() => setVoicePanelOpen(false)}
+                className="absolute top-5 right-5 z-10 size-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Close voice panel"
+              >
+                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <TechnicianVoiceWidget selectedWorkOrderNumber={activeStop?.workOrder.orderNumber} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -167,10 +167,10 @@ export default function TenantReportPage() {
       <NotificationToasts />
 
       {/* ── Nav ─────────────────────────────────────────── */}
-      <header className="glass-nav sticky top-0 z-30 px-6 h-16">
-        <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold tracking-tight select-none">OPSLY</h1>
+      <header className="glass-nav sticky top-0 z-30 px-3 sm:px-6 h-14 sm:h-16 w-full">
+        <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 sm:gap-8 min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight select-none shrink-0">OPSLY</h1>
             <div className="flex items-center gap-1">
               <Link
                 to="/tenant/report"
@@ -191,12 +191,12 @@ export default function TenantReportPage() {
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <ChatNotificationDropdown />
-            <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
             <button
               onClick={logout}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Sign out
             </button>
@@ -205,7 +205,7 @@ export default function TenantReportPage() {
       </header>
 
       {/* ── 3-Column Layout ─────────────────────────────── */}
-      <section className="flex flex-1 items-start justify-center gap-6 p-6 max-w-[1440px] mx-auto w-full">
+      <section className="flex flex-1 items-start justify-center gap-4 sm:gap-6 p-3 sm:p-6 max-w-[1440px] mx-auto w-full">
 
         {/* ── Left: Unit Context + Quick Actions ───────── */}
         <aside className="hidden lg:flex w-[280px] shrink-0 flex-col gap-4 sticky top-24">

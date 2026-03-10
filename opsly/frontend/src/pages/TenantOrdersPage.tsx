@@ -176,10 +176,10 @@ export default function TenantOrdersPage() {
 
   return (
     <main className="min-h-screen">
-      <header className="glass-nav sticky top-0 z-30 px-6 h-16">
-        <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold tracking-tight select-none">OPSLY</h1>
+      <header className="glass-nav sticky top-0 z-30 px-3 sm:px-6 h-14 sm:h-16 w-full">
+        <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 sm:gap-8 min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight select-none shrink-0">OPSLY</h1>
             <div className="flex items-center gap-1">
               <Link
                 to="/tenant/report"
@@ -195,14 +195,14 @@ export default function TenantOrdersPage() {
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <ChatNotificationDropdown />
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground hidden sm:inline">
               {user?.email}
             </span>
             <button
               onClick={logout}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Sign out
             </button>
@@ -210,7 +210,7 @@ export default function TenantOrdersPage() {
         </div>
       </header>
 
-      <section className="max-w-[1440px] mx-auto w-full px-6 py-8">
+      <section className="max-w-[1440px] mx-auto w-full px-3 sm:px-6 py-4 sm:py-8">
         <div className="mb-6">
           <h2 className="text-2xl font-bold">My Work Orders</h2>
           <p className="text-sm text-muted-foreground mt-1">
