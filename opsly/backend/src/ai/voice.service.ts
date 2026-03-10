@@ -4,7 +4,7 @@ import { GoogleGenAI } from '@google/genai';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AgentChannel, AgentSessionStatus, Role } from '@prisma/client';
 
-/** Tool declarations for Gemini Live — mirrors ADK tools from M5 */
+/** Tool declarations for Gemini Live — NON_BLOCKING so server handles audio/tool timing */
 const VOICE_TOOLS = [
   {
     functionDeclarations: [

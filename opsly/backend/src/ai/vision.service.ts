@@ -120,10 +120,11 @@ export class VisionService {
       ]);
 
       const responseText = result.response.text();
+      this.logger.log(`Gemini Vision raw response: ${responseText}`);
       const parsed = JSON.parse(responseText) as AssessmentResult;
 
       this.logger.log(
-        `Assessment complete: severity=${parsed.severity}, priority=${parsed.recommendedPriority}, confidence=${parsed.confidence}`,
+        `Assessment complete: severity=${parsed.severity}, priority=${parsed.recommendedPriority}, confidence=${parsed.confidence}, damageType=${parsed.damageType}, observations=${parsed.observations?.join('; ') ?? 'none'}`,
       );
 
       return parsed;
