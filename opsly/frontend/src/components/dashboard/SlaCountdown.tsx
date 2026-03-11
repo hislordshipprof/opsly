@@ -29,7 +29,7 @@ export function SlaCountdown({ slaDeadline, slaBreached }: SlaCountdownProps) {
   }, [slaDeadline]);
 
   if (!slaDeadline) {
-    return <span className="text-xs text-muted-foreground">--</span>;
+    return <span className="text-xs font-medium text-foreground/50">--</span>;
   }
 
   const breached = slaBreached || (timeLeft != null && timeLeft <= 0);
@@ -54,7 +54,7 @@ export function SlaCountdown({ slaDeadline, slaBreached }: SlaCountdownProps) {
   }
 
   return (
-    <span className="text-xs text-muted-foreground font-mono">
+    <span className="text-xs text-foreground/70 font-mono font-semibold">
       {formatCountdown(timeLeft ?? 0)}
     </span>
   );

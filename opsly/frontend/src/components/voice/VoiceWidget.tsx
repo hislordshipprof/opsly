@@ -50,8 +50,10 @@ export default function VoiceWidget({ userName, onSendReady, recap, onDismissRec
         return api.getUnitByTenant((call.args.tenant_id as string) || user?.id || '');
 
       case 'create_work_order': {
+        // Always fetch real unit — AI agent may hallucinate a unit_id
+        const unit = await api.getUnitByTenant(user?.id || '');
         const workOrder = await api.createWorkOrder({
-          unitId: call.args.unit_id as string,
+          unitId: unit.id,
           issueCategory: call.args.issue_category as string,
           issueDescription: call.args.issue_description as string,
           priority: call.args.priority as string | undefined,
@@ -224,7 +226,7 @@ export default function VoiceWidget({ userName, onSendReady, recap, onDismissRec
   }
 
   return (
-    <div className="flex h-full w-full max-w-lg flex-col rounded-2xl">
+    <div className="flex h-full w-full flex-col rounded-2xl">
       {/* Header — connection status + agent badge */}
       <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
         <div className="flex items-center gap-2">

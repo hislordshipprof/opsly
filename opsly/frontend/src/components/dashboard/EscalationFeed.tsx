@@ -59,7 +59,7 @@ export function EscalationFeed() {
           </div>
           <div>
             <h3 className="text-sm font-bold">Escalations</h3>
-            <p className="text-[10px] text-muted-foreground">Active alerts</p>
+            <p className="text-[11px] font-semibold text-foreground/70">Active alerts</p>
           </div>
         </div>
         {escalations && escalations.length > 0 && (
@@ -89,7 +89,7 @@ export function EscalationFeed() {
                 </svg>
               </div>
               <p className="mt-3 text-sm font-medium">No escalations right now</p>
-              <p className="text-xs text-muted-foreground">You're all caught up!</p>
+              <p className="text-xs text-foreground/60 font-medium">You're all caught up!</p>
             </div>
           )}
 
@@ -109,7 +109,7 @@ export function EscalationFeed() {
                   <span className="font-mono text-sm font-bold text-foreground shrink-0">
                     {esc.workOrder.orderNumber}
                   </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-opsly-urgent/10 dark:bg-opsly-urgent/20 text-opsly-urgent ring-1 ring-inset ring-opsly-urgent/20 whitespace-nowrap">
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-opsly-urgent/15 dark:bg-opsly-urgent/20 text-opsly-urgent ring-1 ring-inset ring-opsly-urgent/30 whitespace-nowrap">
                     {levelLabel(esc.contact.position)} · {esc.contact.label}
                   </span>
                   <div className="ml-auto shrink-0">
@@ -121,16 +121,16 @@ export function EscalationFeed() {
                 </div>
 
                 {/* Row 2: Location + Description */}
-                <p className="text-[11px] font-medium text-foreground/70 mt-1.5">
+                <p className="text-[11px] font-semibold text-foreground/80 mt-1.5">
                   {esc.workOrder.unit.property.name} / Unit {esc.workOrder.unit.unitNumber}
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-foreground/70 font-medium mt-0.5 line-clamp-2 leading-relaxed">
                   {esc.workOrder.issueDescription}
                 </p>
 
                 {/* Row 4: Assigned + Acknowledge */}
                 <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-border/40 dark:border-white/[0.04]">
-                  <span className="text-[11px] text-muted-foreground font-medium">
+                  <span className="text-[11px] text-foreground/70 font-semibold">
                     {esc.workOrder.assignedTo
                       ? <>Assigned to <span className="text-foreground font-semibold">{esc.workOrder.assignedTo.name}</span></>
                       : <span className="text-opsly-high">Unassigned</span>}

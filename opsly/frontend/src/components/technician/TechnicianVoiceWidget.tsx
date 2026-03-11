@@ -41,11 +41,38 @@ export default function TechnicianVoiceWidget({
     }
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /** Slim a schedule response to only the fields the voice agent needs.
+   *  The full response includes visionAssessment JSON, photoUrls etc. which
+   *  are too large for the Gemini Live WebSocket tool response (causes 1007). */
+  function slimSchedule(schedule: any) {
+    if (!schedule) return { message: 'No jobs scheduled for today.' };
+    return {
+      scheduleCode: schedule.scheduleCode,
+      date: schedule.date,
+      totalStops: schedule.stops?.length ?? 0,
+      stops: (schedule.stops ?? []).map((s: any) => ({
+        sequence: s.sequenceNumber,
+        status: s.status,
+        eta: s.plannedEta,
+        orderNumber: s.workOrder?.orderNumber,
+        category: s.workOrder?.issueCategory,
+        priority: s.workOrder?.priority,
+        description: s.workOrder?.issueDescription?.slice(0, 120),
+        address: s.workOrder?.unit?.property?.address,
+        unit: s.workOrder?.unit?.unitNumber,
+        floor: s.workOrder?.unit?.floor,
+        tenant: s.workOrder?.reportedBy?.name,
+      })),
+    };
+  }
+
   /** Execute technician-scoped tool calls */
   async function executeToolCall(call: { name: string; args: Record<string, unknown> }) {
     switch (call.name) {
-      case 'get_technician_schedule':
-        return api.getTechnicianSchedule();
+      case 'get_technician_schedule': {
+        const schedule = await api.getTechnicianSchedule();
+        return slimSchedule(schedule);
+      }
 
       case 'get_work_order':
         return api.getWorkOrderByNumber(call.args.order_number as string);
@@ -68,11 +95,11 @@ export default function TechnicianVoiceWidget({
     }
   }
 
-  const { state, transcript, activeAgent, error, start, stop, setActiveAgent, addTranscript } = useVoiceSession({
+  const { state, transcript, activeAgent, error, start, stop, sendText, setActiveAgent, addTranscript } = useVoiceSession({
     onToolCall: handleToolCall,
   });
 
-  /** Send text via the chat API */
+  /** Send text via the REST chat API (fallback when voice is not active) */
   async function handleTextSend(text: string) {
     // Prepend job context on first message if a work order is selected
     const contextPrefix = selectedWorkOrderNumber && !chatSessionRef.current
@@ -92,6 +119,28 @@ export default function TechnicianVoiceWidget({
       setIsSending(false);
     }
   }
+
+  /** Smart send — route through voice when active, REST otherwise */
+  function handleSmartSend(text: string) {
+    if (sendText(text)) return;
+    handleTextSend(text);
+  }
+
+  /** Quick action click — start voice session with text injected BEFORE mic,
+   *  so the agent processes the query and reads it aloud. Mic stays live for follow-up. */
+  const handleSuggestionClick = useCallback(async (text: string) => {
+    // If voice is already active, send directly into the live session
+    if (sendText(text)) return;
+
+    // Voice not active — start session with initial text (sent before audio capture)
+    addTranscript('user', text);
+    try {
+      await start(text);
+    } catch {
+      // Voice failed — fall back to text chat
+      handleTextSend(text);
+    }
+  }, [sendText, start, addTranscript]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset chat session when selected work order changes so context prefix re-fires
   useEffect(() => {
@@ -114,7 +163,7 @@ export default function TechnicianVoiceWidget({
         entries={transcript}
         isThinking={isSending}
         userName={userName}
-        onSuggestionClick={handleTextSend}
+        onSuggestionClick={handleSuggestionClick}
         recap={recap}
         onDismissRecap={onDismissRecap}
       />
@@ -134,7 +183,7 @@ export default function TechnicianVoiceWidget({
         <div className="flex items-center gap-2">
           <MicButton state={state} onStart={start} onStop={stop} />
           <FallbackTextInput
-            onSend={handleTextSend}
+            onSend={handleSmartSend}
             disabled={state === 'CONNECTING' || isSending}
           />
         </div>

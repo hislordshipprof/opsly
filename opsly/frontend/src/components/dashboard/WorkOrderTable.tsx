@@ -48,7 +48,7 @@ function TableSkeleton() {
 function EmptyState() {
   return (
     <div className="glass-card p-12 text-center">
-      <p className="text-muted-foreground text-sm">No work orders match the current filters.</p>
+      <p className="text-foreground/70 text-sm font-medium">No work orders match the current filters.</p>
     </div>
   );
 }
@@ -73,15 +73,15 @@ export function WorkOrderTable() {
   if (isLoading) return <TableSkeleton />;
   if (!workOrders?.length) return <EmptyState />;
 
-  const headerCls = "text-[11px] uppercase tracking-widest text-muted-foreground/80 font-semibold py-3.5";
+  const headerCls = "text-[11px] uppercase tracking-widest text-foreground/80 font-bold py-3.5";
 
   return (
     <div className="glass-card overflow-hidden">
       {/* Section header */}
       <div className="px-5 py-4 border-b border-border/50">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Work Orders</h3>
-          <span className="text-xs text-muted-foreground font-mono">{workOrders.length} results</span>
+          <h3 className="text-sm font-bold text-foreground">Work Orders</h3>
+          <span className="text-xs font-semibold text-foreground/70 font-mono">{workOrders.length} results</span>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -106,15 +106,15 @@ export function WorkOrderTable() {
               className="cursor-pointer border-border/30 transition-colors hover:bg-primary/[0.03] [&>td]:py-4"
               onClick={() => selectWorkOrder(wo.id)}
             >
-              <TableCell className="font-mono text-sm font-semibold text-primary">
+              <TableCell className="font-mono text-sm font-bold text-primary">
                 {wo.orderNumber}
               </TableCell>
               <TableCell className="text-sm">
-                <span className="text-muted-foreground">{wo.property.name}</span>
-                <span className="mx-1 text-muted-foreground/50">/</span>
-                <span className="font-medium">{wo.unit.unitNumber}</span>
+                <span className="text-foreground/80 font-medium">{wo.property.name}</span>
+                <span className="mx-1 text-foreground/50">/</span>
+                <span className="font-semibold text-foreground">{wo.unit.unitNumber}</span>
               </TableCell>
-              <TableCell className="text-sm max-w-[200px] truncate">
+              <TableCell className="text-sm max-w-[200px] truncate text-foreground/90 font-medium">
                 {wo.issueDescription}
               </TableCell>
               <TableCell>
@@ -132,7 +132,7 @@ export function WorkOrderTable() {
                     <span className="size-6 rounded-full bg-indigo-100/60 dark:bg-primary/10 flex items-center justify-center ring-1 ring-white/50 dark:ring-border text-[10px] font-bold text-indigo-700 dark:text-primary shrink-0">
                       {wo.assignedTo.name.charAt(0).toUpperCase()}
                     </span>
-                    <span className="font-medium">{wo.assignedTo.name}</span>
+                    <span className="font-semibold text-foreground">{wo.assignedTo.name}</span>
                   </div>
                 ) : (
                   <Button
@@ -154,7 +154,7 @@ export function WorkOrderTable() {
                   slaBreached={wo.slaBreached}
                 />
               </TableCell>
-              <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+              <TableCell className="text-xs font-semibold text-foreground/70 whitespace-nowrap">
                 {timeAgo(wo.createdAt)}
               </TableCell>
             </TableRow>

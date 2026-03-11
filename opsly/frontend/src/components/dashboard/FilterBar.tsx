@@ -31,7 +31,7 @@ const PRIORITY_OPTIONS = [
   { value: Priority.LOW, label: 'Low' },
 ];
 
-const glassTriggerCls = 'h-9 rounded-lg border border-white/30 bg-white/50 dark:bg-card/60 dark:border-border backdrop-blur-md shadow-sm hover:bg-white/70 dark:hover:bg-card/80 text-sm';
+const glassTriggerCls = 'h-9 rounded-lg border border-border/80 bg-white/80 dark:bg-card/70 dark:border-border backdrop-blur-md shadow-sm hover:bg-white/95 dark:hover:bg-card/85 text-sm font-semibold text-foreground/90';
 
 export function FilterBar() {
   const { filters, setFilter, clearFilters } = useDashboardStore();
@@ -137,7 +137,7 @@ export function FilterBar() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search orders..."
-          className="h-9 w-[200px] rounded-lg border border-white/30 dark:border-border bg-white/50 dark:bg-card/60 backdrop-blur-md pl-9 pr-3 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm"
+          className="h-9 w-[200px] rounded-lg border border-border/80 bg-white/80 dark:bg-card/70 dark:border-border backdrop-blur-md pl-9 pr-3 text-sm font-semibold text-foreground/90 placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm"
         />
       </div>
 

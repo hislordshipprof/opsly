@@ -92,7 +92,7 @@ const VARIANT_COLORS: Record<string, string> = {
 function MetricItem({ metric }: { metric: KpiMetric }) {
   return (
     <div className="flex flex-col gap-0.5 min-w-0">
-      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">
+      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-widest truncate">
         {metric.label}
       </span>
       <span className={`font-mono text-lg font-bold leading-none ${VARIANT_COLORS[metric.variant]}`}>

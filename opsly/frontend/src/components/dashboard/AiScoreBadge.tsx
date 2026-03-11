@@ -5,8 +5,8 @@ interface AiScoreBadgeProps {
 export function AiScoreBadge({ score }: AiScoreBadgeProps) {
   if (score === null || score === undefined) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-muted/40 text-muted-foreground border border-border/50">
-        <span className="opacity-50">—</span>
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-muted/50 text-foreground/50 border border-border/60">
+        <span>—</span>
       </span>
     );
   }
@@ -21,11 +21,11 @@ export function AiScoreBadge({ score }: AiScoreBadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${colorClass}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${colorClass}`}
       title={`AI confidence: ${(score * 100).toFixed(0)}%`}
     >
       <svg
-        className="size-2.5 opacity-70"
+        className="size-3"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

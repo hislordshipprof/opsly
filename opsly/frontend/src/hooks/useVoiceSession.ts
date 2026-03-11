@@ -10,7 +10,6 @@ export type VoiceState =
   | 'USER_SPEAKING'
   | 'AGENT_THINKING'
   | 'AGENT_SPEAKING'
-  | 'RECONNECTING'
   | 'ERROR';
 
 export interface TranscriptEntry {
@@ -34,9 +33,6 @@ export interface UseVoiceSessionOptions {
   onStateChange?: (state: VoiceState) => void;
 }
 
-const MAX_RECONNECT_ATTEMPTS = 3;
-const RECONNECT_DELAY_MS = 1500;
-
 export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
   const [state, setState] = useState<VoiceState>('IDLE');
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
@@ -51,12 +47,8 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
   const streamRef = useRef<MediaStream | null>(null);
   // Pause audio streaming during tool calls (prevents error 1008)
   const toolCallActiveRef = useRef<boolean>(false);
-  // Track reconnection attempts
-  const reconnectCountRef = useRef<number>(0);
   // Flag to distinguish intentional stop from unexpected close
   const intentionalCloseRef = useRef<boolean>(false);
-  // Store token data for reconnection
-  const tokenDataRef = useRef<any>(null);
 
   const updateState = useCallback((newState: VoiceState) => {
     setState(newState);
@@ -69,9 +61,11 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
       const last = prev[prev.length - 1];
       if (last && last.role === role && !metadata && !last.metadata) {
         const updated = [...prev];
+        // Input transcription arrives as small fragments (syllable-level) —
+        // concatenate directly without extra space, the API includes its own spacing
         updated[updated.length - 1] = {
           ...last,
-          content: last.content + ' ' + content.trim(),
+          content: last.content + content,
         };
         return updated;
       }
@@ -120,10 +114,7 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
         outputAudioTranscription: {},
       },
       callbacks: {
-        onopen: () => {
-          reconnectCountRef.current = 0; // Reset on successful connection
-          updateState('LISTENING');
-        },
+        onopen: () => updateState('LISTENING'),
         onmessage: (msg: any) => handleMessage(msg),
         onerror: (e: any) => {
           console.error('Gemini Live error:', e?.code, e?.reason, e?.message);
@@ -136,16 +127,6 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
           console.warn('Gemini Live closed:', code, reason);
           sessionRef.current = null;
           toolCallActiveRef.current = false;
-
-          // Auto-reconnect on 1008 ONLY if we had a working session (not initial failure)
-          const hadActiveSession = reconnectCountRef.current === 0 && state !== 'CONNECTING';
-          if (!intentionalCloseRef.current && code === 1008 && hadActiveSession && reconnectCountRef.current < MAX_RECONNECT_ATTEMPTS) {
-            reconnectCountRef.current++;
-            console.log(`Auto-reconnecting (attempt ${reconnectCountRef.current}/${MAX_RECONNECT_ATTEMPTS})...`);
-            updateState('RECONNECTING');
-            handleReconnect();
-            return;
-          }
 
           if (state !== 'ERROR') updateState('IDLE');
         },
@@ -199,42 +180,37 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
     playbackNodeRef.current = playbackNode;
   }
 
-  /** Auto-reconnect after 1008 — get fresh token and reconnect */
-  async function handleReconnect(): Promise<void> {
-    teardownAudio();
-    try {
-      // Get a fresh ephemeral token
-      const tokenData = await getVoiceToken();
-      tokenDataRef.current = tokenData;
-      // Keep the same backend session ID — don't create a new one
-      await connectToGemini(tokenData);
-      await setupAudio();
-      console.log('Voice session reconnected successfully');
-    } catch (err) {
-      console.error('Reconnect failed:', err);
-      setError('Voice connection lost. Please try again.');
-      updateState('ERROR');
-    }
-  }
-
-  /** Start a voice session — request token, connect to Gemini Live, start mic */
-  const start = useCallback(async () => {
+  /** Start a voice session — request token, connect to Gemini Live, start mic.
+   *  Pass `initialText` to inject a text prompt BEFORE audio capture starts —
+   *  this avoids the 1007 "invalid argument" error that occurs when
+   *  sendClientContent races with streaming audio frames. */
+  const start = useCallback(async (initialText?: string) => {
     try {
       intentionalCloseRef.current = false;
-      reconnectCountRef.current = 0;
       updateState('CONNECTING');
       setError(null);
-      setTranscript([]);
+      // Only clear transcript when starting a fresh voice session (no initial text).
+      // When initialText is provided the caller already added it to the transcript.
+      if (!initialText) setTranscript([]);
 
       // 1. Get ephemeral token from backend
       const tokenData = await getVoiceToken();
       sessionIdRef.current = tokenData.sessionId;
-      tokenDataRef.current = tokenData;
 
       // 2. Connect to Gemini Live
       await connectToGemini(tokenData);
 
-      // 3. Set up audio I/O
+      // 3. If initial text provided, send it BEFORE audio capture so there is
+      //    no conflict between text turns and streaming audio frames
+      if (initialText && sessionRef.current) {
+        sessionRef.current.sendClientContent({
+          turns: [{ role: 'user', parts: [{ text: initialText }] }],
+          turnComplete: true,
+        });
+        updateState('AGENT_THINKING');
+      }
+
+      // 4. Set up audio I/O — mic starts AFTER the text turn is sent
       await setupAudio();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to start voice session';
@@ -288,31 +264,31 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
   async function handleToolCalls(calls: Array<{ id: string; name: string; args: Record<string, unknown> }>) {
     if (!options.onToolCall || !sessionRef.current) return;
 
-    // Pause audio streaming — Gemini rejects sendRealtimeInput during tool calls
+    // Pause ALL realtime input — Gemini rejects sendRealtimeInput during tool calls (error 1008)
     toolCallActiveRef.current = true;
 
-    const responses = [];
-    for (const call of calls) {
-      try {
-        const result = await options.onToolCall(call);
-        responses.push({ id: call.id, name: call.name, response: result as Record<string, unknown> });
-      } catch (err) {
-        responses.push({
-          id: call.id,
-          name: call.name,
-          response: { error: err instanceof Error ? err.message : 'Tool call failed' },
-        });
-      }
-    }
-
     try {
-      sessionRef.current.sendToolResponse({ functionResponses: responses });
+      const responses = [];
+      for (const call of calls) {
+        try {
+          const result = await options.onToolCall(call);
+          responses.push({ id: call.id, name: call.name, response: result as Record<string, unknown> });
+        } catch (err) {
+          responses.push({
+            id: call.id,
+            name: call.name,
+            response: { error: err instanceof Error ? err.message : 'Tool call failed' },
+          });
+        }
+      }
+
+      sessionRef.current?.sendToolResponse({ functionResponses: responses });
     } catch {
       // Session may have closed during tool execution
+    } finally {
+      // ALWAYS resume audio — even if sendToolResponse throws
+      toolCallActiveRef.current = false;
     }
-
-    // Resume audio streaming after tool response sent
-    toolCallActiveRef.current = false;
   }
 
   /** Stop the voice session — tear down audio, close connection, save transcript */
@@ -340,7 +316,7 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
   const sendText = useCallback((text: string, opts?: { silent?: boolean }): boolean => {
     if (!sessionRef.current) return false;
     try {
-      // Pause audio so Gemini processes the text as the active turn
+      // Briefly pause mic so Gemini processes the text as the active turn
       toolCallActiveRef.current = true;
       playbackNodeRef.current?.port.postMessage({ clear: true });
 
@@ -354,8 +330,9 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
         addTranscript('user', text);
       }
       updateState('AGENT_THINKING');
-      // Resume audio after server has time to process the text turn
-      setTimeout(() => { toolCallActiveRef.current = false; }, 2000);
+      // Resume mic after a short pause — keep it short so the session stays
+      // conversational. Tool call handler will re-pause if a tool call arrives.
+      setTimeout(() => { toolCallActiveRef.current = false; }, 800);
       return true;
     } catch {
       toolCallActiveRef.current = false;

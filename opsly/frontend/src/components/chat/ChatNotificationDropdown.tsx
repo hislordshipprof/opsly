@@ -61,11 +61,11 @@ function ThreadItem({
           <span className="font-mono text-xs font-bold text-foreground truncate">
             {thread.orderNumber}
           </span>
-          <span className="text-[10px] text-muted-foreground shrink-0 font-mono">
+          <span className="text-[10px] text-foreground/50 shrink-0 font-mono font-medium">
             {timeAgo(msg.createdAt)}
           </span>
         </div>
-        <p className="text-[11px] font-medium text-muted-foreground truncate mb-0.5">
+        <p className="text-[11px] font-medium text-foreground/60 truncate mb-0.5">
           {msg.sender.name} &middot;{' '}
           <span className="capitalize">{msg.sender.role.toLowerCase()}</span>
         </p>
@@ -119,7 +119,7 @@ export function ChatNotificationDropdown() {
         aria-label="Chat messages"
       >
         <svg
-          className="size-[18px] text-muted-foreground"
+          className="size-[18px] text-foreground/70"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -182,8 +182,8 @@ export function ChatNotificationDropdown() {
                     />
                   </svg>
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">No messages yet</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">
+                <p className="text-sm font-semibold text-foreground/60">No messages yet</p>
+                <p className="text-xs font-medium text-foreground/50 mt-1">
                   Chat will appear here when a technician messages you
                 </p>
               </div>
