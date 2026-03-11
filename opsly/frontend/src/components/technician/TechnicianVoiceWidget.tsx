@@ -41,11 +41,38 @@ export default function TechnicianVoiceWidget({
     }
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /** Slim a schedule response to only the fields the voice agent needs.
+   *  The full response includes visionAssessment JSON, photoUrls etc. which
+   *  are too large for the Gemini Live WebSocket tool response (causes 1007). */
+  function slimSchedule(schedule: any) {
+    if (!schedule) return { message: 'No jobs scheduled for today.' };
+    return {
+      scheduleCode: schedule.scheduleCode,
+      date: schedule.date,
+      totalStops: schedule.stops?.length ?? 0,
+      stops: (schedule.stops ?? []).map((s: any) => ({
+        sequence: s.sequenceNumber,
+        status: s.status,
+        eta: s.plannedEta,
+        orderNumber: s.workOrder?.orderNumber,
+        category: s.workOrder?.issueCategory,
+        priority: s.workOrder?.priority,
+        description: s.workOrder?.issueDescription?.slice(0, 120),
+        address: s.workOrder?.unit?.property?.address,
+        unit: s.workOrder?.unit?.unitNumber,
+        floor: s.workOrder?.unit?.floor,
+        tenant: s.workOrder?.reportedBy?.name,
+      })),
+    };
+  }
+
   /** Execute technician-scoped tool calls */
   async function executeToolCall(call: { name: string; args: Record<string, unknown> }) {
     switch (call.name) {
-      case 'get_technician_schedule':
-        return api.getTechnicianSchedule();
+      case 'get_technician_schedule': {
+        const schedule = await api.getTechnicianSchedule();
+        return slimSchedule(schedule);
+      }
 
       case 'get_work_order':
         return api.getWorkOrderByNumber(call.args.order_number as string);

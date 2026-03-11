@@ -189,7 +189,9 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
       intentionalCloseRef.current = false;
       updateState('CONNECTING');
       setError(null);
-      setTranscript([]);
+      // Only clear transcript when starting a fresh voice session (no initial text).
+      // When initialText is provided the caller already added it to the transcript.
+      if (!initialText) setTranscript([]);
 
       // 1. Get ephemeral token from backend
       const tokenData = await getVoiceToken();
