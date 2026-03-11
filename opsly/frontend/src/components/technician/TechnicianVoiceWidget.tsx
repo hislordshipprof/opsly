@@ -93,21 +93,27 @@ export default function TechnicianVoiceWidget({
     }
   }
 
-  /** Quick action click — start voice session and send text so agent speaks the answer */
+  /** Smart send — route through voice when active, REST otherwise */
+  function handleSmartSend(text: string) {
+    if (sendText(text)) return;
+    handleTextSend(text);
+  }
+
+  /** Quick action click — start voice session with text injected BEFORE mic,
+   *  so the agent processes the query and reads it aloud. Mic stays live for follow-up. */
   const handleSuggestionClick = useCallback(async (text: string) => {
     // If voice is already active, send directly into the live session
     if (sendText(text)) return;
 
-    // Voice not active — start session first, then send once connected
+    // Voice not active — start session with initial text (sent before audio capture)
+    addTranscript('user', text);
     try {
-      await start();
-      // Small delay to let the session establish before sending text
-      setTimeout(() => { sendText(text); }, 1500);
+      await start(text);
     } catch {
       // Voice failed — fall back to text chat
       handleTextSend(text);
     }
-  }, [sendText, start]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sendText, start, addTranscript]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset chat session when selected work order changes so context prefix re-fires
   useEffect(() => {
@@ -150,7 +156,7 @@ export default function TechnicianVoiceWidget({
         <div className="flex items-center gap-2">
           <MicButton state={state} onStart={start} onStop={stop} />
           <FallbackTextInput
-            onSend={handleTextSend}
+            onSend={handleSmartSend}
             disabled={state === 'CONNECTING' || isSending}
           />
         </div>

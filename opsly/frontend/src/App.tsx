@@ -6,6 +6,9 @@ import LandingPage from '@/pages/landing/LandingPage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import TenantReportPage from '@/pages/TenantReportPage';
+import TenantReportPageA from '@/pages/TenantReportPageA';
+import TenantReportPageB from '@/pages/TenantReportPageB';
+import TenantReportPageC from '@/pages/TenantReportPageC';
 import TenantOrdersPage from '@/pages/TenantOrdersPage';
 import ManagerDashboardPage from '@/pages/ManagerDashboardPage';
 import TechnicianDashboardPage from '@/pages/TechnicianDashboardPage';
@@ -93,6 +96,11 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Design variants — temp preview routes */}
+            <Route path="/tenant/report-a" element={<ProtectedRoute roles={[Role.TENANT]}><TenantReportPageA /></ProtectedRoute>} />
+            <Route path="/tenant/report-b" element={<ProtectedRoute roles={[Role.TENANT]}><TenantReportPageB /></ProtectedRoute>} />
+            <Route path="/tenant/report-c" element={<ProtectedRoute roles={[Role.TENANT]}><TenantReportPageC /></ProtectedRoute>} />
 
             {/* Landing page — public */}
             <Route path="/" element={<LandingPage />} />

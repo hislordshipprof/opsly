@@ -95,17 +95,17 @@ function KpiCard({ label, value, subtitle, variant = 'default', icon }: KpiCardP
       <div className="p-5 relative">
         {/* Top row: label + icon bubble */}
         <div className="flex items-start justify-between">
-          <p className="text-[13px] font-medium text-muted-foreground tracking-wide">{label}</p>
+          <p className="text-[13px] font-bold text-foreground/90 tracking-wide">{label}</p>
           <div className={`rounded-full p-2.5 shadow-sm ring-1 ${config.iconBg}`}>
             <span className={config.iconText}>{icon}</span>
           </div>
         </div>
         {/* Big number */}
-        <p className={`text-3xl font-semibold mt-2 tracking-tight ${config.value}`}>
+        <p className={`text-3xl font-bold mt-2 tracking-tight ${config.value}`}>
           {value}
         </p>
         {subtitle && (
-          <p className="text-xs text-muted-foreground mt-1.5">{subtitle}</p>
+          <p className="text-xs font-semibold text-foreground/70 mt-1.5">{subtitle}</p>
         )}
       </div>
     </div>

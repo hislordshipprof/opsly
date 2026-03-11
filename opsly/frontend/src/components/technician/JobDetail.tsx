@@ -6,6 +6,7 @@ import { PriorityBadge } from '@/components/dashboard/PriorityBadge';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { SlaCountdown } from '@/components/dashboard/SlaCountdown';
 import { CompletionModal } from './CompletionModal';
+import { NeedsPartsModal } from './NeedsPartsModal';
 import { PhotoLightbox } from './PhotoLightbox';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import type { ScheduleStop } from '@/types';
@@ -29,6 +30,7 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
   const isPending = stop.status === StopStatus.PENDING;
 
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showNeedsPartsModal, setShowNeedsPartsModal] = useState(false);
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [selectedEta, setSelectedEta] = useState<string | null>(null);
   const [etaSent, setEtaSent] = useState(false);
@@ -65,6 +67,13 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
     },
   });
 
+  function handleNeedsParts(notes: string) {
+    woMutation.mutate(
+      { status: 'NEEDS_PARTS', notes },
+      { onSuccess: () => setShowNeedsPartsModal(false) },
+    );
+  }
+
   function handleComplete(notes: string) {
     stopMutation.mutate(
       { status: StopStatus.COMPLETED, notes: notes || undefined },
@@ -89,7 +98,7 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
       <div className="px-7 pt-5 pb-4 border-b border-border/40">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground mb-3 transition-colors"
+          className="inline-flex items-center gap-1 text-[10px] font-bold text-foreground/60 uppercase tracking-widest hover:text-foreground mb-3 transition-colors"
         >
           <svg className="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -110,7 +119,7 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
       </div>
 
       {/* ── Scrollable Content ──────────────────────────── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto scrollbar-none">
 
         {/* 2x2 Info Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -164,7 +173,7 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
 
         {/* Issue Description */}
         <div className="px-7 py-5 border-b border-border/40">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 pl-3 border-l-[3px] border-primary">
+          <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest mb-2 pl-3 border-l-[3px] border-primary">
             Issue Description
           </p>
           <p className="text-sm text-secondary-foreground leading-relaxed">{wo.issueDescription}</p>
@@ -173,7 +182,7 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
         {/* Photo Gallery */}
         {wo.photoUrls?.length > 0 && (
           <div className="px-7 py-5 border-b border-border/40">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-foreground/70 uppercase tracking-widest mb-3">
               <svg className="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" />
@@ -226,18 +235,18 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
 
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="text-center p-3 rounded-xl bg-card/60 border border-border/40">
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Damage Type</p>
+                <p className="text-[9px] font-bold text-foreground/70 uppercase tracking-wider">Damage Type</p>
                 <p className="text-sm font-bold mt-1 capitalize">{severity.damageType?.replace(/_/g, ' ') ?? '\u2014'}</p>
               </div>
               <div className="text-center p-3 rounded-xl bg-card/60 border border-border/40">
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Severity</p>
+                <p className="text-[9px] font-bold text-foreground/70 uppercase tracking-wider">Severity</p>
                 <p className={`text-sm font-bold mt-1 ${
                   severity.severity === 'HIGH' ? 'text-opsly-urgent' :
                   severity.severity === 'MEDIUM' ? 'text-opsly-high' : 'text-opsly-low'
                 }`}>{severity.severity}</p>
               </div>
               <div className="text-center p-3 rounded-xl bg-card/60 border border-border/40">
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Confidence</p>
+                <p className="text-[9px] font-bold text-foreground/70 uppercase tracking-wider">Confidence</p>
                 <p className="text-sm font-mono font-bold mt-1">{Math.round((severity.confidence ?? 0) * 100)}%</p>
               </div>
             </div>
@@ -258,7 +267,7 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
         {/* ETA Quick Set — only when en route (tenant wants arrival time) */}
         {isEnRoute && (
           <div className="px-7 py-5 border-b border-border/40">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3">
+            <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest mb-3">
               Send Arrival ETA to Tenant
             </p>
             <div className="flex gap-2 flex-wrap items-center">
@@ -331,7 +340,7 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
               {stopMutation.isPending ? 'Updating...' : 'Mark Arrived'}
             </button>
             <button
-              onClick={() => woMutation.mutate({ status: 'NEEDS_PARTS' })}
+              onClick={() => setShowNeedsPartsModal(true)}
               disabled={woMutation.isPending}
               className="flex-1 min-w-[120px] h-12 rounded-xl border-[1.5px] border-border text-secondary-foreground text-sm font-bold flex items-center justify-center gap-2 hover:border-primary hover:text-primary hover:bg-primary/[0.04] transition-all disabled:opacity-50"
             >
@@ -367,7 +376,7 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
               Mark Complete
             </button>
             <button
-              onClick={() => woMutation.mutate({ status: 'NEEDS_PARTS' })}
+              onClick={() => setShowNeedsPartsModal(true)}
               disabled={woMutation.isPending}
               className="flex-1 min-w-[120px] h-12 rounded-xl border-[1.5px] border-border text-secondary-foreground text-sm font-bold flex items-center justify-center gap-2 hover:border-primary hover:text-primary hover:bg-primary/[0.04] transition-all disabled:opacity-50"
             >
@@ -394,7 +403,7 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
           <div className="p-4 rounded-xl bg-opsly-low/8 border border-opsly-low/15 text-center">
             <span className="text-opsly-low font-bold text-sm">{'\u2713'} Job Complete</span>
             {wo.resolutionNotes && (
-              <p className="text-xs text-muted-foreground mt-1">{wo.resolutionNotes}</p>
+              <p className="text-xs font-medium text-foreground/60 mt-1">{wo.resolutionNotes}</p>
             )}
           </div>
         )}
@@ -407,6 +416,13 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
         onClose={() => setShowCompletionModal(false)}
         onSubmit={handleComplete}
         isSubmitting={stopMutation.isPending}
+      />
+      <NeedsPartsModal
+        orderNumber={wo.orderNumber}
+        isOpen={showNeedsPartsModal}
+        onClose={() => setShowNeedsPartsModal(false)}
+        onSubmit={handleNeedsParts}
+        isSubmitting={woMutation.isPending}
       />
       <PhotoLightbox
         photoUrl={lightboxPhoto}
@@ -432,15 +448,15 @@ function InfoCell({ icon, label, value, sub, subColor, borderRight }: {
 }) {
   return (
     <div className={`flex gap-3.5 px-7 py-5 border-b border-border/40 ${borderRight ? 'lg:border-r' : ''}`}>
-      <div className="size-10 rounded-xl bg-muted/40 flex items-center justify-center text-muted-foreground shrink-0">
+      <div className="size-10 rounded-xl bg-muted/40 flex items-center justify-center text-foreground/60 shrink-0">
         <svg className="size-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
           {ICONS[icon]}
         </svg>
       </div>
       <div className="min-w-0">
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest mb-1">{label}</p>
         <p className="text-[15px] font-bold truncate">{value}</p>
-        <p className={`text-xs mt-0.5 ${subColor ?? 'text-muted-foreground'}`}>{sub}</p>
+        <p className={`text-xs font-medium mt-0.5 ${subColor ?? 'text-foreground/60'}`}>{sub}</p>
       </div>
     </div>
   );

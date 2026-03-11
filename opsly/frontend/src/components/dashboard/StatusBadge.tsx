@@ -58,7 +58,7 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
   const config = STATUS_CONFIG[status];
 
   return (
-    <Badge variant="outline" className={`${config.className} text-xs font-medium gap-1.5 border-transparent ${className}`}>
+    <Badge variant="outline" className={`${config.className} text-xs font-bold gap-1.5 border-transparent ${className}`}>
       <span className={`size-1.5 rounded-full ${config.dot}`} />
       {config.label}
     </Badge>

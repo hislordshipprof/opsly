@@ -31,11 +31,12 @@ function SidebarJobCard({
   return (
     <div
       onClick={onClick}
-      className={`relative glass-card p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
+      className={`relative glass-card p-4 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${
         isActive
           ? 'border-l-4 border-l-primary bg-primary/[0.06]'
           : 'hover:border-border/80'
       } ${isDone ? 'opacity-50' : ''} ${isRecommended ? 'mt-5' : ''}`}
+      style={{ border: '1px solid rgba(0,0,0,0.12)', ...(isActive ? { borderLeftWidth: '4px' } : {}) }}
     >
       {isRecommended && !isDone && (
         <span className="absolute -top-2.5 left-3 bg-primary text-primary-foreground text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-widest shadow-sm">
@@ -45,7 +46,7 @@ function SidebarJobCard({
 
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="size-8 rounded-lg glass-card flex items-center justify-center text-sm font-bold text-muted-foreground shrink-0">
+          <div className="size-8 rounded-lg glass-card flex items-center justify-center text-sm font-bold text-foreground/70 shrink-0">
             {isDone ? '\u2713' : stop.sequenceNumber}
           </div>
           <span className="font-mono text-sm font-bold">{wo.orderNumber}</span>
@@ -54,7 +55,7 @@ function SidebarJobCard({
         <div className="text-right">
           <span className={`block text-[10px] font-bold uppercase tracking-tight ${
             stop.status === StopStatus.ARRIVED || stop.status === StopStatus.EN_ROUTE
-              ? 'text-opsly-high' : 'text-muted-foreground'
+              ? 'text-opsly-high' : 'text-foreground/70'
           }`}>
             {STOP_LABEL[stop.status]}
           </span>
@@ -64,7 +65,7 @@ function SidebarJobCard({
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground font-medium truncate mt-2 pl-11">
+      <p className="text-sm text-foreground/70 font-medium truncate mt-2 pl-11">
         {wo.unit.property.address} / {wo.unit.unitNumber}
       </p>
     </div>
@@ -81,20 +82,20 @@ function RouteSummary({
   const pct = stops.length > 0 ? Math.round((completed / stops.length) * 100) : 0;
 
   return (
-    <div className="glass-card p-8 mb-8">
-      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-5">
+    <div className="glass-card p-6 sm:p-8 mb-4 sm:mb-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-200" style={{ border: '1px solid rgba(0,0,0,0.12)' }}>
+      <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest mb-5">
         Today's Route
       </p>
       <div className="flex items-baseline gap-2 mb-1">
         <span className="font-mono text-5xl font-extrabold">{remaining}</span>
-        <span className="text-xl text-muted-foreground font-medium">left</span>
+        <span className="text-xl text-foreground/60 font-semibold">left</span>
       </div>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm font-medium text-foreground/60">
         {completed} completed &middot; {stops.length} total
       </p>
 
       <div className="mt-8 space-y-2">
-        <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+        <div className="flex items-center justify-between text-[10px] font-bold text-foreground/70 uppercase tracking-widest">
           <span>{schedule?.region ?? 'Route'}</span>
           <span className="font-mono">{pct}%</span>
         </div>
@@ -107,7 +108,7 @@ function RouteSummary({
       </div>
 
       <div className="mt-8 pt-5 border-t border-border/40">
-        <p className="text-[10px] font-medium text-muted-foreground font-mono uppercase tracking-widest">
+        <p className="text-[10px] font-semibold text-foreground/60 font-mono uppercase tracking-widest">
           {schedule?.scheduleCode}
         </p>
       </div>
@@ -123,14 +124,14 @@ function EmptyDetailState({
   recommendedStop: ScheduleStop | undefined; onSelect: (id: string) => void;
 }) {
   return (
-    <div className="glass-card flex-1 flex flex-col items-center justify-center text-center p-8 min-h-[500px] border-dashed">
+    <div className="glass-card flex-1 flex flex-col items-center justify-center text-center p-8 border-dashed" style={{ border: '1px solid rgba(0,0,0,0.12)' }}>
       <div className="size-20 rounded-full bg-muted/40 flex items-center justify-center mb-5">
         <svg className="size-9 text-muted-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59" />
         </svg>
       </div>
       <h2 className="text-xl font-bold mb-2">Select a job to view details</h2>
-      <p className="text-muted-foreground max-w-md mb-8 leading-relaxed">
+      <p className="text-foreground/60 font-medium max-w-md mb-8 leading-relaxed">
         Browse your queue on the left and select any job to view full tenant details, location, and issue description.
       </p>
 
@@ -147,7 +148,7 @@ function EmptyDetailState({
           <div className="text-left flex-1 min-w-0">
             <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-0.5">Smart Recommendation</p>
             <p className="text-sm font-bold">Start with {recommendedStop.workOrder.orderNumber}</p>
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+            <p className="text-xs font-medium text-foreground/60 mt-0.5 truncate">
               {recommendedStop.workOrder.priority} priority &middot; {recommendedStop.workOrder.unit.property.address}
             </p>
           </div>
@@ -164,7 +165,7 @@ function HistoryCard({ stop }: { stop: ScheduleStop }) {
   const wo = stop.workOrder;
 
   return (
-    <div className="glass-card p-5 flex items-center gap-4 hover:shadow-md transition-all cursor-pointer">
+    <div className="glass-card p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer" style={{ border: '1px solid rgba(0,0,0,0.12)' }}>
       <div className="size-9 rounded-xl bg-opsly-low/8 flex items-center justify-center text-opsly-low font-bold text-sm shrink-0">
         {'\u2713'}
       </div>
@@ -173,18 +174,18 @@ function HistoryCard({ stop }: { stop: ScheduleStop }) {
           <span className="font-mono text-sm font-bold">{wo.orderNumber}</span>
           <PriorityBadge priority={wo.priority} />
         </div>
-        <p className="text-xs text-muted-foreground truncate">
+        <p className="text-xs font-medium text-foreground/60 truncate">
           {wo.unit.property.address} / {wo.unit.unitNumber} &mdash; {wo.issueDescription}
         </p>
       </div>
       <div className="text-right shrink-0">
-        <p className="font-mono text-[11px] text-muted-foreground">
+        <p className="font-mono text-[11px] font-medium text-foreground/60">
           {stop.actualArrival
             ? new Date(stop.actualArrival).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
             : 'Today'}
         </p>
         {wo.resolutionNotes && (
-          <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[160px] truncate">
+          <p className="text-[11px] font-medium text-foreground/60 mt-0.5 max-w-[160px] truncate">
             {wo.resolutionNotes}
           </p>
         )}
@@ -197,10 +198,10 @@ function HistoryCard({ stop }: { stop: ScheduleStop }) {
 
 function HistoryView({ completedStops }: { completedStops: ScheduleStop[] }) {
   return (
-    <div className="glass-card p-7 flex-1">
+    <div className="glass-card p-7 flex-1 overflow-y-auto scrollbar-none" style={{ border: '1px solid rgba(0,0,0,0.12)' }}>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold">Job History</h2>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs font-medium text-foreground/60">
           {completedStops.length} job{completedStops.length !== 1 ? 's' : ''} completed today
         </span>
       </div>
@@ -213,7 +214,7 @@ function HistoryView({ completedStops }: { completedStops: ScheduleStop[] }) {
             </svg>
           </div>
           <p className="text-lg font-bold mb-1">No completed jobs yet</p>
-          <p className="text-sm text-muted-foreground max-w-sm">
+          <p className="text-sm font-medium text-foreground/60 max-w-sm">
             Jobs you complete today will appear here with resolution notes and timestamps.
           </p>
         </div>
@@ -278,9 +279,9 @@ export default function TechnicianDashboardPage() {
   }, [remaining, stops.length]);
 
   return (
-    <div className="min-h-screen">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* ── Nav ─────────────────────────────────────────── */}
-      <header className="glass-nav sticky top-0 z-30 px-3 sm:px-6 h-14 sm:h-16 w-full">
+      <header className="glass-nav shrink-0 z-30 px-3 sm:px-6 h-14 sm:h-16 w-full">
         <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 sm:gap-8 min-w-0">
             <h1 className="text-lg sm:text-xl font-bold tracking-tight select-none shrink-0">OPSLY</h1>
@@ -305,7 +306,7 @@ export default function TechnicianDashboardPage() {
                 {isConnected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-opsly-low opacity-75" />}
                 <span className={`relative inline-flex rounded-full size-2 ${isConnected ? 'bg-opsly-low' : 'bg-muted-foreground'}`} />
               </span>
-              <span className={`text-[10px] font-bold uppercase tracking-wider ${isConnected ? 'text-opsly-low' : 'text-muted-foreground'} hidden sm:inline`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${isConnected ? 'text-opsly-low' : 'text-foreground/60'} hidden sm:inline`}>
                 {isConnected ? 'Live' : 'Offline'}
               </span>
             </div>
@@ -313,16 +314,16 @@ export default function TechnicianDashboardPage() {
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-bold leading-none">{user?.email?.split('@')[0] ?? 'Technician'}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Senior Technician</p>
+                <p className="text-[10px] font-medium text-foreground/60 mt-0.5">Senior Technician</p>
               </div>
               <div className="size-8 sm:size-10 rounded-full bg-muted/60 flex items-center justify-center ring-1 ring-border">
-                <span className="text-xs sm:text-sm font-bold text-muted-foreground">
+                <span className="text-xs sm:text-sm font-bold text-foreground/70">
                   {user?.email?.charAt(0).toUpperCase() ?? 'T'}
                 </span>
               </div>
               <button
                 onClick={logout}
-                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xs sm:text-sm font-medium text-foreground/60 hover:text-foreground transition-colors"
               >
                 Sign out
               </button>
@@ -332,18 +333,18 @@ export default function TechnicianDashboardPage() {
       </header>
 
       {/* ── Content ────────────────────────────────────── */}
-      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-6 py-4 sm:py-8 flex flex-col md:flex-row gap-4 sm:gap-8">
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-6 py-3 sm:py-6 flex flex-col md:flex-row gap-4 sm:gap-6 flex-1 min-h-0 overflow-hidden">
 
         {/* Loading skeleton */}
         {isLoading && (
           <>
             <aside className="w-full md:w-[340px] xl:w-[400px] shrink-0 space-y-4">
-              <div className="glass-card h-64 animate-pulse" />
-              <div className="glass-card h-20 animate-pulse" />
-              <div className="glass-card h-20 animate-pulse" />
+              <div className="glass-card h-64 animate-pulse" style={{ border: '1px solid rgba(0,0,0,0.12)' }} />
+              <div className="glass-card h-20 animate-pulse" style={{ border: '1px solid rgba(0,0,0,0.12)' }} />
+              <div className="glass-card h-20 animate-pulse" style={{ border: '1px solid rgba(0,0,0,0.12)' }} />
             </aside>
             <section className="flex-1">
-              <div className="glass-card h-[500px] animate-pulse" />
+              <div className="glass-card h-[500px] animate-pulse" style={{ border: '1px solid rgba(0,0,0,0.12)' }} />
             </section>
           </>
         )}
@@ -353,7 +354,7 @@ export default function TechnicianDashboardPage() {
           <>
             {/* Sidebar: Queue */}
             {stops.length > 0 && (
-              <aside className="w-full md:w-[340px] xl:w-[400px] flex flex-col shrink-0">
+              <aside className="w-full md:w-[340px] xl:w-[400px] flex flex-col shrink-0 min-h-0 overflow-y-auto scrollbar-none">
                 <RouteSummary
                   schedule={schedule ?? null}
                   stops={stops}
@@ -361,24 +362,31 @@ export default function TechnicianDashboardPage() {
                   remaining={remaining}
                 />
 
-                <div className="glass-card p-5 flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-5">
+                <div className="glass-card p-5 flex-1 flex flex-col min-h-0" style={{ border: '1px solid rgba(0,0,0,0.12)' }}>
+                  <div className="flex items-center justify-between mb-5 shrink-0">
                     <h2 className="text-lg font-bold">Today's Queue</h2>
-                    <span className="text-[10px] font-bold text-muted-foreground px-2 py-1 rounded bg-muted/50 uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-foreground/70 px-2 py-1 rounded bg-muted/50 uppercase tracking-wider">
                       {completed}/{stops.length} Complete
                     </span>
                   </div>
 
-                  <div className="space-y-3 overflow-y-auto flex-1" style={{ maxHeight: 'calc(100vh - 520px)' }}>
-                    {stops.map((stop, i) => (
-                      <SidebarJobCard
-                        key={stop.id}
-                        stop={stop}
-                        isActive={activeStopId === stop.id}
-                        isRecommended={i === 0 && stop.id === recommendedStop?.id}
-                        onClick={() => setActiveStopId(stop.id)}
-                      />
-                    ))}
+                  <div className="space-y-3 overflow-y-auto flex-1 min-h-0 scrollbar-none">
+                    {[...stops]
+                      .sort((a, b) => {
+                        const aDone = a.status === StopStatus.COMPLETED || a.status === StopStatus.SKIPPED;
+                        const bDone = b.status === StopStatus.COMPLETED || b.status === StopStatus.SKIPPED;
+                        if (aDone !== bDone) return aDone ? 1 : -1;
+                        return a.sequenceNumber - b.sequenceNumber;
+                      })
+                      .map((stop) => (
+                        <SidebarJobCard
+                          key={stop.id}
+                          stop={stop}
+                          isActive={activeStopId === stop.id}
+                          isRecommended={stop.id === recommendedStop?.id}
+                          onClick={() => setActiveStopId(stop.id)}
+                        />
+                      ))}
                   </div>
                 </div>
               </aside>
@@ -387,7 +395,7 @@ export default function TechnicianDashboardPage() {
             {/* Detail Panel + Chat — active jobs */}
             {stops.length > 0 && remaining > 0 && (
               <>
-                <section className="flex-1 flex flex-col min-w-0">
+                <section className="flex-1 flex flex-col min-w-0 min-h-0 overflow-y-auto scrollbar-none">
                   {activeStop ? (
                     <JobDetailPanel stop={activeStop} onBack={() => setActiveStopId(null)} />
                   ) : (
@@ -402,12 +410,12 @@ export default function TechnicianDashboardPage() {
             {((stops.length === 0) || (stops.length > 0 && remaining === 0 && !activeStop)) && (
               <>
                 <section className="flex-1 flex items-center justify-center">
-                  <div className="glass-card p-12 flex flex-col items-center text-center max-w-md">
+                  <div className="glass-card p-12 flex flex-col items-center text-center max-w-md" style={{ border: '1px solid rgba(0,0,0,0.12)' }}>
                     <div className="size-20 rounded-full bg-opsly-low/10 flex items-center justify-center mb-4">
                       <span className="text-3xl text-opsly-low">&#10003;</span>
                     </div>
                     <p className="text-lg font-bold">All clear for today</p>
-                    <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+                    <p className="text-sm font-medium text-foreground/60 mt-1 max-w-sm">
                       No jobs scheduled. Use the voice widget to check for updates.
                     </p>
                   </div>

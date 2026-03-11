@@ -41,7 +41,7 @@ export function ChatPanel({ workOrderId }: ChatPanelProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+      <div className="flex items-center justify-center h-full text-foreground/60 font-medium text-sm">
         Loading messages...
       </div>
     );
@@ -52,7 +52,7 @@ export function ChatPanel({ workOrderId }: ChatPanelProps) {
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm gap-2">
+          <div className="flex flex-col items-center justify-center h-full text-foreground/60 text-sm gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -80,7 +80,7 @@ export function ChatPanel({ workOrderId }: ChatPanelProps) {
                 )}
                 <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                 <span className={`text-[10px] mt-1 block ${
-                  isMe ? 'text-primary-foreground/60' : 'text-muted-foreground'
+                  isMe ? 'text-primary-foreground/60' : 'text-foreground/50'
                 }`}>
                   {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
@@ -100,7 +100,7 @@ export function ChatPanel({ workOrderId }: ChatPanelProps) {
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           disabled={isSending}
-          className="flex-1 bg-transparent border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
+          className="flex-1 bg-transparent border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-foreground/40"
         />
         <button
           onClick={handleSend}

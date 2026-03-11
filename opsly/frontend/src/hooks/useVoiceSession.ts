@@ -180,8 +180,11 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
     playbackNodeRef.current = playbackNode;
   }
 
-  /** Start a voice session — request token, connect to Gemini Live, start mic */
-  const start = useCallback(async () => {
+  /** Start a voice session — request token, connect to Gemini Live, start mic.
+   *  Pass `initialText` to inject a text prompt BEFORE audio capture starts —
+   *  this avoids the 1007 "invalid argument" error that occurs when
+   *  sendClientContent races with streaming audio frames. */
+  const start = useCallback(async (initialText?: string) => {
     try {
       intentionalCloseRef.current = false;
       updateState('CONNECTING');
@@ -195,7 +198,17 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
       // 2. Connect to Gemini Live
       await connectToGemini(tokenData);
 
-      // 3. Set up audio I/O
+      // 3. If initial text provided, send it BEFORE audio capture so there is
+      //    no conflict between text turns and streaming audio frames
+      if (initialText && sessionRef.current) {
+        sessionRef.current.sendClientContent({
+          turns: [{ role: 'user', parts: [{ text: initialText }] }],
+          turnComplete: true,
+        });
+        updateState('AGENT_THINKING');
+      }
+
+      // 4. Set up audio I/O — mic starts AFTER the text turn is sent
       await setupAudio();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to start voice session';
@@ -301,7 +314,7 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
   const sendText = useCallback((text: string, opts?: { silent?: boolean }): boolean => {
     if (!sessionRef.current) return false;
     try {
-      // Pause audio so Gemini processes the text as the active turn
+      // Briefly pause mic so Gemini processes the text as the active turn
       toolCallActiveRef.current = true;
       playbackNodeRef.current?.port.postMessage({ clear: true });
 
@@ -315,8 +328,9 @@ export function useVoiceSession(options: UseVoiceSessionOptions = {}) {
         addTranscript('user', text);
       }
       updateState('AGENT_THINKING');
-      // Resume audio after server has time to process the text turn
-      setTimeout(() => { toolCallActiveRef.current = false; }, 2000);
+      // Resume mic after a short pause — keep it short so the session stays
+      // conversational. Tool call handler will re-pause if a tool call arrives.
+      setTimeout(() => { toolCallActiveRef.current = false; }, 800);
       return true;
     } catch {
       toolCallActiveRef.current = false;
