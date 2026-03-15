@@ -14,7 +14,7 @@ export default function ManagerDashboardPage() {
   const { isConnected } = useDashboardEvents();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-role-manager">
       {/* Ambient glow orbs — dark mode only */}
       <div className="hidden dark:block fixed inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden="true">
         <div className="ambient-orb w-[500px] h-[500px] bg-[hsla(200,80%,50%,0.08)] top-[-5%] left-[-5%]" />

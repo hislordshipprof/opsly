@@ -11,15 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import type { VisionAssessment } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import type { WorkOrderDetail as WorkOrderDetailType, WorkOrderEvent } from '@/types';
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+import { formatDate } from '@/lib/time';
 
 const EVENT_ICONS: Record<string, string> = {
   CREATED: 'C',

@@ -14,10 +14,10 @@ export function AiScoreBadge({ score }: AiScoreBadgeProps) {
   // Color coding: green >= 0.8, amber 0.5-0.79, red < 0.5
   const colorClass =
     score >= 0.8
-      ? 'bg-opsly-low/10 text-opsly-low border-opsly-low/30'
+      ? 'bg-opsly-low/10 text-white border-opsly-low/30'
       : score >= 0.5
-      ? 'bg-opsly-high/10 text-opsly-high border-opsly-high/30'
-      : 'bg-opsly-urgent/10 text-opsly-urgent border-opsly-urgent/30';
+      ? 'bg-opsly-high/10 text-white border-opsly-high/30'
+      : 'bg-opsly-urgent/10 text-white border-opsly-urgent/30';
 
   return (
     <span

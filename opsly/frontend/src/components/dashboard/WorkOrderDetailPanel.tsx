@@ -12,15 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { WorkOrderStatus } from '@/types';
 import type { WorkOrderDetail as WorkOrderDetailType, WorkOrderEvent } from '@/types';
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+import { formatDate } from '@/lib/time';
 
 /** Soft tinted background for timeline dots */
 const EVENT_DOT_BG: Record<string, string> = {

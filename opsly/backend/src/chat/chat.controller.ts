@@ -16,6 +16,7 @@ import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Role } from '@prisma/client';
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { OpslyGateway } from '../websocket/opsly.gateway.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 @Controller('chat')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -23,6 +24,7 @@ export class ChatController {
   constructor(
     private readonly chatService: ChatService,
     private readonly gateway: OpslyGateway,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Get('threads')
@@ -62,8 +64,17 @@ export class ChatController {
       dto.content,
     );
 
+    // Look up WO participants so notification badges update in real-time
+    const wo = await this.prisma.workOrder.findUnique({
+      where: { id: workOrderId },
+      select: { reportedById: true, assignedToId: true },
+    });
+    const participantIds = [wo?.reportedById, wo?.assignedToId].filter(
+      (id): id is string => !!id,
+    );
+
     // Emit via WebSocket to work order room + personal rooms
-    this.gateway.emitChatMessage(workOrderId, message);
+    this.gateway.emitChatMessage(workOrderId, message, participantIds);
 
     return message;
   }

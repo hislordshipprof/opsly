@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getWorkOrders } from '@/services/api';
 import { QUERY_KEYS } from '@/services/query-keys';
 import { PriorityBadge } from '@/components/dashboard/PriorityBadge';
@@ -11,19 +12,9 @@ import { ChatPanel } from '@/components/chat/ChatPanel';
 import { ChatNotificationDropdown } from '@/components/chat/ChatNotificationDropdown';
 import { WorkOrderStatus, Priority } from '@/types';
 import type { WorkOrderListItem } from '@/types';
+import { timeAgo } from '@/lib/time';
 
 /* ── Utilities ─────────────────────────────────────────── */
-
-function timeAgo(date: string): string {
-  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ${minutes % 60}m ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
 
 function getPriorityBorderColor(order: WorkOrderListItem): string {
   if (order.status === 'ESCALATED') return 'border-l-opsly-urgent';
@@ -259,6 +250,26 @@ export default function TenantOrdersPage() {
     refetchInterval: false,
   });
 
+  // Real-time: invalidate work orders cache on status/assignment changes
+  const queryClient = useQueryClient();
+  const { subscribe, isConnected } = useWebSocket();
+
+  useEffect(() => {
+    if (!isConnected) return;
+    const events = [
+      'workorder.status_changed',
+      'workorder.completed',
+      'workorder.technician_assigned',
+      'workorder.created',
+    ] as const;
+    const unsubs = events.map((evt) =>
+      subscribe(evt, () => {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workOrders() });
+      }),
+    );
+    return () => unsubs.forEach((u) => u());
+  }, [isConnected, subscribe, queryClient]);
+
   // Deep-link: auto-open chat sidebar from ?chat= param
   useEffect(() => {
     if (chatWorkOrderId) {
@@ -301,7 +312,7 @@ export default function TenantOrdersPage() {
   const selectedOrder = orders?.find(o => o.id === selectedChatOrderId);
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-role-tenant">
       {/* Nav header */}
       <header className="glass-nav sticky top-0 z-30 px-3 sm:px-6 h-14 sm:h-16 w-full">
         <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between gap-2">

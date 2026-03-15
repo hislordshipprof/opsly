@@ -108,6 +108,7 @@ export class WorkOrdersService {
         slaDeadline: true,
         slaBreached: true,
         createdAt: true,
+        updatedAt: true,
         unit: { select: { unitNumber: true } },
         property: { select: { name: true } },
         reportedBy: { select: { id: true, name: true } },

@@ -240,12 +240,21 @@ export class OpslyGateway
   emitChatMessage(
     workOrderId: string,
     message: Record<string, unknown>,
+    participantIds: string[] = [],
   ) {
+    // Emit to the work order room (for open chat panels)
     this.emitToRoom(
       `workorder:${workOrderId}`,
       'chat.message_sent',
       message,
     );
+    // Also emit to each participant's personal room (for notification badge)
+    for (const userId of participantIds) {
+      this.emitToRoom(`tenant:${userId}`, 'chat.message_sent', message);
+      this.emitToRoom(`technician:${userId}`, 'chat.message_sent', message);
+    }
+    // Notify managers/admins
+    this.emitToRoom('ops:all', 'chat.message_sent', message);
   }
 
   /** Generic emit to a specific room with standard envelope */

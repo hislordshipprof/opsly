@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useChatThreads } from '@/hooks/useChatThreads';
 import { useAuth } from '@/hooks/useAuth';
 import type { ChatThread } from '@/types';
+import { timeAgo } from '@/lib/time';
 
 const ROLE_COLORS: Record<string, string> = {
   TENANT: 'bg-primary/10 text-primary',
@@ -10,16 +11,6 @@ const ROLE_COLORS: Record<string, string> = {
   MANAGER: 'bg-amber-500/10 text-amber-500',
   ADMIN: 'bg-purple-500/10 text-purple-500',
 };
-
-function timeAgo(date: string): string {
-  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  return `${Math.floor(hours / 24)}d`;
-}
 
 function ThreadItem({
   thread,

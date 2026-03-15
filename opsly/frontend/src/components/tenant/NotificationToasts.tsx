@@ -27,12 +27,14 @@ function toastFromEvent(event: string, data: Record<string, unknown>): Omit<Toas
         accent: 'border-l-opsly-high',
         icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
       };
-    case 'workorder.technician_assigned':
+    case 'workorder.technician_assigned': {
+      const techName = (data.assignedTo as Record<string, unknown>)?.name as string ?? 'A technician';
       return {
-        message: `Technician assigned to ${orderNum}`,
+        message: `${techName} assigned to ${orderNum}`,
         accent: 'border-l-primary',
         icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
       };
+    }
     case 'workorder.photo_assessed':
       return {
         message: `Photo assessed for ${orderNum}`,

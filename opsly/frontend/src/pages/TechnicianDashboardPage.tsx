@@ -279,7 +279,7 @@ export default function TechnicianDashboardPage() {
   }, [remaining, stops.length]);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden bg-role-tenant">
       {/* ── Nav ─────────────────────────────────────────── */}
       <header className="glass-nav shrink-0 z-30 px-3 sm:px-6 h-14 sm:h-16 w-full">
         <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between gap-2">

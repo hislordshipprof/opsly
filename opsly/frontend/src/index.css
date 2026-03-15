@@ -197,13 +197,28 @@ body {
   }
 }
 
-/* ━━━ Light Mode — Apartment Photo Background ━━━ */
+/* ━━━ Light Mode — Base Background ━━━ */
 body:not(.dark) {
-  background-image: url('/hero-apartment.jpg');
+  background-color: #E8EFF7;
+}
+
+/* ━━━ Per-Role Photo Backgrounds (light mode only) ━━━ */
+.bg-role-tenant:not(.dark *),
+:not(.dark) .bg-role-tenant {
+  background-image: url('/bg3.jpg');
   background-size: cover;
   background-attachment: fixed;
   background-position: center;
-  background-color: #E8EFF7;
+  --glass-bg: rgba(255, 255, 255, 0.35);
+  --glass-bg-heavy: rgba(255, 255, 255, 0.45);
+}
+
+.bg-role-manager:not(.dark *),
+:not(.dark) .bg-role-manager {
+  background-image: url('/bg2.avif');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
 }
 
 /* ━━━ Dark Mode — Mesh Gradient Background ━━━ */

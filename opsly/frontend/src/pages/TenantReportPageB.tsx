@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { Link, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getUnitByTenant, getWorkOrders, getTenantInsights, getSessionRecap } from '@/services/api';
 import { QUERY_KEYS } from '@/services/query-keys';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
@@ -22,18 +22,9 @@ import VoiceWidget from '@/components/voice/VoiceWidget';
 import NotificationToasts from '@/components/tenant/NotificationToasts';
 import { ChatNotificationDropdown } from '@/components/chat/ChatNotificationDropdown';
 import type { WorkOrderListItem } from '@/types';
+import { timeAgo } from '@/lib/time';
 
 /* ── Helpers ─────────────────────────────────────────────── */
-
-function timeAgo(date: string): string {
-  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
 
 function priorityBorderClass(priority: string): string {
   switch (priority) {
@@ -143,14 +134,23 @@ export default function TenantReportPageB() {
     if (Object.keys(apiEtas).length > 0) setEtaMap((prev) => ({ ...apiEtas, ...prev }));
   }, [orders]);
 
+  const queryClient = useQueryClient();
   useEffect(() => {
     if (!isConnected) return;
-    return subscribe('workorder.eta_updated', (payload: { data: Record<string, unknown> }) => {
-      const woId = payload.data.workOrderId as string;
-      const eta = payload.data.eta as string;
-      if (woId && eta) setEtaMap((prev) => ({ ...prev, [woId]: eta }));
-    });
-  }, [isConnected, subscribe]);
+    const unsubs = [
+      subscribe('workorder.eta_updated', (payload: { data: Record<string, unknown> }) => {
+        const woId = payload.data.workOrderId as string;
+        const eta = payload.data.eta as string;
+        if (woId && eta) setEtaMap((prev) => ({ ...prev, [woId]: eta }));
+      }),
+      ...['workorder.status_changed', 'workorder.completed', 'workorder.technician_assigned'].map(
+        (evt) => subscribe(evt, () => {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workOrders() });
+        }),
+      ),
+    ];
+    return () => unsubs.forEach((u) => u());
+  }, [isConnected, subscribe, queryClient]);
 
   const activeRecap = !recapDismissed && recapData?.recap ? recapData as { recap: string; sessionAge: string } : null;
   const activeOrders = orders?.filter((o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED') ?? [];
