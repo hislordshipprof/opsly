@@ -196,7 +196,7 @@ opsly/
 ### 1. Clone and install
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/hislordshipprof/opsly.git
 cd opsly
 
 # Backend
@@ -252,6 +252,8 @@ Open `http://localhost:5173`
 
 ### 5. Demo accounts (from seed data)
 
+> These credentials work on both local and production deployments.
+
 | Role | Email | Password |
 |------|-------|----------|
 | Tenant | `tenant@opsly.io` | `password123` |
@@ -259,6 +261,81 @@ Open `http://localhost:5173`
 | Technician | `james.tech@opsly.io` | `password123` |
 | Manager | `sarah@opsly.io` | `password123` |
 | Admin | `admin@opsly.io` | `password123` |
+
+---
+
+## Live Demo
+
+| Service | URL |
+|---------|-----|
+| **Frontend** | *Your Vercel deployment URL* |
+| **Backend API** | [https://opsly-backend-632522234515.us-central1.run.app](https://opsly-backend-632522234515.us-central1.run.app) |
+
+Use the demo accounts above to log in.
+
+---
+
+## Production Deployment
+
+### Deploy Backend to Google Cloud Run
+
+**Prerequisites:** [Google Cloud SDK](https://cloud.google.com/sdk/docs/install), a GCP project with billing enabled, a PostgreSQL database (Supabase, Cloud SQL, or Neon).
+
+```bash
+cd opsly/backend
+
+# 1. Build and push Docker image via Cloud Build
+gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/opsly-backend
+
+# 2. Deploy to Cloud Run
+gcloud run deploy opsly-backend \
+  --image gcr.io/YOUR_PROJECT_ID/opsly-backend \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars "DATABASE_URL=your-postgres-url,JWT_SECRET=your-secret,JWT_REFRESH_SECRET=your-refresh-secret,GEMINI_API_KEY=your-gemini-key,FRONTEND_URL=*"
+
+# 3. Run migrations against production database
+DATABASE_URL=your-postgres-url npx prisma migrate deploy
+
+# 4. Seed demo data
+DATABASE_URL=your-postgres-url npx prisma db seed
+```
+
+The `Dockerfile` uses a multi-stage build (Node 20 Alpine) — builder installs deps and compiles TypeScript, runner copies only production artifacts.
+
+### Deploy Frontend to Vercel
+
+**Option A: GitHub Integration (recommended)**
+1. Import `hislordshipprof/opsly` on [vercel.com](https://vercel.com)
+2. Set Root Directory to `opsly/frontend`
+3. Add environment variables:
+   - `VITE_API_URL` = your Cloud Run backend URL
+   - `VITE_WS_URL` = your Cloud Run backend URL (with `wss://` prefix)
+4. Deploy — Vercel auto-builds on push to `main`
+
+**Option B: CLI**
+```bash
+cd opsly/frontend
+vercel --prod
+```
+
+### Production Environment Variables
+
+**Backend (Cloud Run):**
+```
+DATABASE_URL          PostgreSQL connection string
+JWT_SECRET            JWT signing secret
+JWT_REFRESH_SECRET    Refresh token signing secret
+GEMINI_API_KEY        Google AI Studio API key
+FRONTEND_URL          Frontend origin for CORS (use * for hackathon)
+```
+
+**Frontend (Vercel):**
+```
+VITE_API_URL          Backend API URL (https://...)
+VITE_WS_URL           Backend WebSocket URL (wss://...)
+```
 
 ---
 
