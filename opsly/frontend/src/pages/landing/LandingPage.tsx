@@ -414,7 +414,6 @@ export default function LandingPage() {
       <nav className={`lp-nav ${navScrolled ? 'scrolled' : ''}`}>
         <div className="logo">OPSLY</div>
         <div className="nav-r">
-          <Link to="/login" className="btn-ghost">Docs</Link>
           <Link to="/login" className="btn-solid">Sign In</Link>
         </div>
       </nav>
@@ -724,8 +723,6 @@ export default function LandingPage() {
         <div>&copy; 2026 OPSLY &mdash; AI-Powered Property Management</div>
         <div className="foot-r">
           <span className="sys-ok">All systems operational</span>
-          <a href="#">API Status</a>
-          <a href="#">Docs</a>
         </div>
       </footer>
     </div>

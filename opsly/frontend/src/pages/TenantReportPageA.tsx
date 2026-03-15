@@ -10,7 +10,7 @@
  * - Right: Order cards have mini step-progress dots for status clarity
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { Link, useLocation } from 'react-router-dom';

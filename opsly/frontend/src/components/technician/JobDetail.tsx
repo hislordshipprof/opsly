@@ -4,7 +4,6 @@ import { updateStopStatus, updateStopEta, updateWorkOrderStatus } from '@/servic
 import { QUERY_KEYS } from '@/services/query-keys';
 import { PriorityBadge } from '@/components/dashboard/PriorityBadge';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
-import { SlaCountdown } from '@/components/dashboard/SlaCountdown';
 import { CompletionModal } from './CompletionModal';
 import { NeedsPartsModal } from './NeedsPartsModal';
 import { PhotoLightbox } from './PhotoLightbox';
@@ -25,7 +24,6 @@ export function JobDetailPanel({ stop, onBack }: JobDetailProps) {
   const severity = wo.visionAssessment;
   const isEnRoute = stop.status === StopStatus.EN_ROUTE;
   const isOnSite = stop.status === StopStatus.ARRIVED;
-  const isActive = isEnRoute || isOnSite; // tech is working this job
   const isDone = stop.status === StopStatus.COMPLETED || stop.status === StopStatus.SKIPPED;
   const isPending = stop.status === StopStatus.PENDING;
 

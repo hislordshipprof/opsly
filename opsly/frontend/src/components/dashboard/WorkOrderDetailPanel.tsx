@@ -22,17 +22,6 @@ function formatDate(dateStr: string): string {
   });
 }
 
-const EVENT_ICONS: Record<string, string> = {
-  CREATED: 'C',
-  STATUS_CHANGED: 'S',
-  TECHNICIAN_ASSIGNED: 'T',
-  PHOTO_UPLOADED: 'P',
-  ETA_UPDATED: 'E',
-  NOTE_ADDED: 'N',
-  ESCALATED: '!',
-  COMPLETED: 'D',
-};
-
 /** Soft tinted background for timeline dots */
 const EVENT_DOT_BG: Record<string, string> = {
   CREATED: 'bg-muted',

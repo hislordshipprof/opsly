@@ -269,7 +269,7 @@ export default function TenantOrdersPage() {
 
   const activeFilterCount = statusFilters.size + priorityFilters.size;
 
-  function toggleFilter(set: Set<string>, setFn: React.Dispatch<React.SetStateAction<Set<string>>>, value: string) {
+  function toggleFilter(_set: Set<string>, setFn: React.Dispatch<React.SetStateAction<Set<string>>>, value: string) {
     setFn(prev => {
       const next = new Set(prev);
       if (next.has(value)) next.delete(value); else next.add(value);

@@ -179,7 +179,7 @@ export default function VoiceWidget({ userName, onSendReady, recap, onDismissRec
       const a = result.assessment;
 
       // Build the context message for the agent
-      const contextMessage = `[Photo assessment completed: damageType=${a.damageType}, severity=${a.severity}, confidence=${a.confidence}, recommendedPriority=${a.recommendedPriority}, observations: ${a.observations?.join('; ') ?? 'none'}]`;
+      const contextMessage = `[Photo assessment completed: damageType=${a.damageType}, severity=${a.severity}, confidence=${a.confidence}, recommendedPriority=${a.recommendedPriority}, description: ${a.description}]`;
 
       // Route 1: Voice session active — inject into Gemini Live (interrupts current speech)
       // Don't check state — onclose may briefly set it to IDLE during reconnection.

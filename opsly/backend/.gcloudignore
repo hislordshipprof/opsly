@@ -1,0 +1,27 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Build output (rebuilt on Cloud Build)
+dist/
+
+# Environment files
+.env
+.env.*
+
+# Tests
+test/
+**/*.spec.ts
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Dev config
+.eslintrc*
+.prettierrc*
