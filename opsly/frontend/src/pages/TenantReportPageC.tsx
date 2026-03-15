@@ -212,7 +212,7 @@ export default function TenantReportPageC() {
   )[0];
 
   const liveUpdates = activeOrders
-    .map((o) => ({ text: statusUpdateText(o), dot: statusDotColor(o.status), time: timeAgo(o.updatedAt), id: o.id }))
+    .map((o) => ({ text: statusUpdateText(o), dot: statusDotColor(o.status), time: timeAgo(o.createdAt), id: o.id }))
     .filter((u) => u.text != null)
     .slice(0, 4);
 

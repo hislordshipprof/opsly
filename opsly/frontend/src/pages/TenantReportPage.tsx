@@ -148,7 +148,7 @@ export default function TenantReportPage() {
 
   // Derive live updates from active orders
   const liveUpdates = activeOrders
-    .map((o) => ({ text: statusUpdateText(o), dot: statusDotColor(o.status), time: timeAgo(o.updatedAt), order: o }))
+    .map((o) => ({ text: statusUpdateText(o), dot: statusDotColor(o.status), time: timeAgo(o.createdAt), order: o }))
     .filter((u) => u.text != null)
     .slice(0, 4);
 
