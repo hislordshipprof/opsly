@@ -209,8 +209,27 @@ body:not(.dark) {
   background-size: cover;
   background-attachment: fixed;
   background-position: center;
-  --glass-bg: rgba(255, 255, 255, 0.35);
-  --glass-bg-heavy: rgba(255, 255, 255, 0.45);
+  position: relative;
+  --glass-bg: rgba(255, 255, 255, 0.50);
+  --glass-bg-heavy: rgba(255, 255, 255, 0.55);
+}
+
+/* Frosted white wash — mutes the photo so glass cards are readable */
+.bg-role-tenant::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.40);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ensure all page content sits above the frosted overlay */
+.bg-role-tenant > * {
+  position: relative;
+  z-index: 1;
 }
 
 .bg-role-manager:not(.dark *),

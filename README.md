@@ -268,7 +268,7 @@ Open `http://localhost:5173`
 
 | Service | URL |
 |---------|-----|
-| **Frontend** | *Your Vercel deployment URL* |
+| **Frontend** | [https://frontend-theta-dusky-58.vercel.app](https://frontend-theta-dusky-58.vercel.app) |
 | **Backend API** | [https://opsly-backend-632522234515.us-central1.run.app](https://opsly-backend-632522234515.us-central1.run.app) |
 
 Use the demo accounts above to log in.
