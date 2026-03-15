@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: |
             opsly/backend/package-lock.json
@@ -67,26 +67,35 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure Docker for GCR
-        run: gcloud auth configure-docker --quiet
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker $GCP_REGION-docker.pkg.dev --quiet
+
+      - name: Create Artifact Registry repo (if not exists)
+        run: |
+          gcloud artifacts repositories describe opsly \
+            --location=$GCP_REGION --format="value(name)" 2>/dev/null || \
+          gcloud artifacts repositories create opsly \
+            --repository-format=docker \
+            --location=$GCP_REGION \
+            --description="OPSLY Docker images"
 
       - name: Build Docker image
         run: |
           docker build \
-            -t gcr.io/$GCP_PROJECT_ID/$CLOUD_RUN_SERVICE:${{ github.sha }} \
-            -t gcr.io/$GCP_PROJECT_ID/$CLOUD_RUN_SERVICE:latest \
+            -t $GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/opsly/$CLOUD_RUN_SERVICE:${{ github.sha }} \
+            -t $GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/opsly/$CLOUD_RUN_SERVICE:latest \
             .
         working-directory: opsly/backend
 
       - name: Push Docker image
         run: |
-          docker push gcr.io/$GCP_PROJECT_ID/$CLOUD_RUN_SERVICE:${{ github.sha }}
-          docker push gcr.io/$GCP_PROJECT_ID/$CLOUD_RUN_SERVICE:latest
+          docker push $GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/opsly/$CLOUD_RUN_SERVICE:${{ github.sha }}
+          docker push $GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/opsly/$CLOUD_RUN_SERVICE:latest
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $CLOUD_RUN_SERVICE \
-            --image gcr.io/$GCP_PROJECT_ID/$CLOUD_RUN_SERVICE:${{ github.sha }} \
+            --image $GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/opsly/$CLOUD_RUN_SERVICE:${{ github.sha }} \
             --platform managed \
             --region $GCP_REGION \
             --allow-unauthenticated \
@@ -102,19 +111,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install Vercel CLI
         run: npm i -g vercel@latest
 
-      - name: Pull Vercel environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: opsly/frontend
-
-      - name: Build for production
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: opsly/frontend
-
-      - name: Deploy to Vercel
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy to Vercel Production
+        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: opsly/frontend
