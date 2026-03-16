@@ -203,59 +203,29 @@ body:not(.dark) {
 }
 
 /* ━━━ Per-Role Photo Backgrounds (light mode only) ━━━ */
+/* White wash baked into background-image — no pseudo-elements, works everywhere */
 .bg-role-tenant:not(.dark *),
 :not(.dark) .bg-role-tenant {
-  background-image: url('/bg3.jpg');
+  background-image:
+    linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45)),
+    url('/bg3.jpg');
   background-size: cover;
   background-attachment: fixed;
   background-position: center;
-  position: relative;
   --glass-bg: rgba(255, 255, 255, 0.50);
   --glass-bg-heavy: rgba(255, 255, 255, 0.55);
 }
 
-/* Frosted white wash — mutes the photo so glass cards are readable */
-.bg-role-tenant::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.40);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Ensure all page content sits above the frosted overlay */
-.bg-role-tenant > * {
-  position: relative;
-  z-index: 1;
-}
-
 .bg-role-manager:not(.dark *),
 :not(.dark) .bg-role-manager {
-  background-image: url('/bg2.avif');
+  background-image:
+    linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45)),
+    url('/bg2.avif');
   background-size: cover;
   background-attachment: fixed;
   background-position: center;
-  position: relative;
-}
-
-/* Frosted wash for manager dashboard */
-.bg-role-manager::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.40);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.bg-role-manager > * {
-  position: relative;
-  z-index: 1;
+  --glass-bg: rgba(255, 255, 255, 0.50);
+  --glass-bg-heavy: rgba(255, 255, 255, 0.55);
 }
 
 /* ━━━ Dark Mode — Mesh Gradient Background ━━━ */
