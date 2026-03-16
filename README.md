@@ -254,13 +254,13 @@ Open `http://localhost:5173`
 
 > These credentials work on both local and production deployments.
 
-| Role | Email | Password |
-|------|-------|----------|
-| Tenant | `tenant@opsly.io` | `password123` |
-| Technician | `mike@opsly.io` | `password123` |
-| Technician | `james.tech@opsly.io` | `password123` |
-| Manager | `sarah@opsly.io` | `password123` |
-| Admin | `admin@opsly.io` | `password123` |
+| Role | Name | Email | Password |
+|------|------|-------|----------|
+| Tenant | Emily Carter | `tenant@opsly.io` | `password123` |
+| Technician | Mike Thompson | `mike@opsly.io` | `password123` |
+| Technician | James Ortiz | `james.tech@opsly.io` | `password123` |
+| Manager | Sarah Manager | `sarah@opsly.io` | `password123` |
+| Admin | James Admin | `admin@opsly.io` | `password123` |
 
 ---
 

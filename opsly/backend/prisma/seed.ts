@@ -60,7 +60,7 @@ async function main() {
   });
 
   const tenant1 = await prisma.user.create({
-    data: { name: 'Sarah Tenant', email: 'tenant@opsly.io', passwordHash: password, role: Role.TENANT },
+    data: { name: 'Emily Carter', email: 'tenant@opsly.io', passwordHash: password, role: Role.TENANT },
   });
 
   const tenant2 = await prisma.user.create({
