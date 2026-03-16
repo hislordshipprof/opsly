@@ -1,8 +1,8 @@
 # OPSLY — AI-Powered Property Management Platform
 
-**Voice-first. Real-time. Autonomous.**
+**Voice + Vision AI. Real-time. Autonomous.**
 
-OPSLY is a Live AI Agent platform that gives property management teams a voice-first, real-time operations command center. Tenants report maintenance issues by speaking to an AI agent. Technicians receive hands-free job briefings. Property managers watch their entire portfolio update in real-time on a single dashboard with AI-assessed severity scores, SLA tracking, and live escalation feeds.
+OPSLY is a Live AI Agent platform that gives property management teams a voice + vision, real-time operations command center. Tenants report maintenance issues by speaking to an AI agent and uploading photos for automatic AI damage assessment. Technicians receive hands-free voice briefings. Property managers watch their entire portfolio update in real-time on a single dashboard with AI-assessed severity scores, SLA tracking, and live escalation feeds.
 
 > **Hackathon:** Google Gemini — Live Agents Category
 > **Solo build** | Built with Claude Code
@@ -117,7 +117,7 @@ Every state change propagates instantly via WebSocket to all relevant users:
 ## Features by Role
 
 ### Tenant Portal
-- **Voice-first issue reporting** — speak naturally, AI creates a structured work order
+- **Voice + Vision issue reporting** — speak naturally to report issues, upload photos for AI damage assessment
 - **Photo upload + AI assessment** — Gemini Vision scores damage severity automatically
 - **Real-time order tracking** — status timeline, technician ETA countdown
 - **Live notifications** — toast alerts when status changes, technician assigned, ETA updated

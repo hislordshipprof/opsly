@@ -30,9 +30,10 @@ Tab 3: https://frontend-theta-dusky-58.vercel.app  → Login as Mike Thompson (m
 > it takes five phone calls just to get a plumber scheduled.
 > No tracking, no SLA, no visibility."
 
-> "OPSLY fixes this. It's a voice-first AI platform where tenants speak
-> to report issues, technicians get hands-free job briefings, and managers
-> watch everything update live on one dashboard."
+> "OPSLY fixes this. It's a voice and vision AI platform where tenants speak
+> to report issues and upload photos for AI damage assessment, technicians
+> get hands-free job briefings, and managers watch everything update live
+> on one dashboard."
 
 > "It's built with Gemini Live API for voice, Google ADK for multi-agent
 > orchestration, and Gemini Vision for photo damage assessment —
@@ -111,7 +112,7 @@ Tab 3: https://frontend-theta-dusky-58.vercel.app  → Login as Mike Thompson (m
 > React frontend on Vercel, PostgreSQL on Supabase.
 > Everything synced in real-time through WebSockets."
 
-> "OPSLY — voice-first property management, powered by Gemini."
+> "OPSLY — voice and vision property management, powered by Gemini."
 
 **Stop recording.**
 
