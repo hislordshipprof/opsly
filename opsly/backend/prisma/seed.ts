@@ -25,6 +25,7 @@ async function main() {
   await prisma.agentSession.deleteMany();
   await prisma.scheduleStop.deleteMany();
   await prisma.technicianSchedule.deleteMany();
+  await prisma.chatMessage.deleteMany();
   await prisma.workOrderEvent.deleteMany();
   await prisma.workOrder.deleteMany();
   await prisma.unit.deleteMany();
