@@ -1,6 +1,13 @@
 # Reference repo — never commit
 CallSphere/
 
+# Internal docs — never commit
+CLAUDE.md
+opsly/CLAUDE.md
+opsly/OPSLY_PRD.md
+opsly/DEMO_SCRIPT.md
+opsly/BLOG_POST.md
+
 # Claude config — track team settings, ignore personal
 .claude/settings.local.json
 .claude/plans/
