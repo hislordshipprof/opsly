@@ -238,6 +238,24 @@ body:not(.dark) {
   background-size: cover;
   background-attachment: fixed;
   background-position: center;
+  position: relative;
+}
+
+/* Frosted wash for manager dashboard */
+.bg-role-manager::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.40);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-role-manager > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ━━━ Dark Mode — Mesh Gradient Background ━━━ */
